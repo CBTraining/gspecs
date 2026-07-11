@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Smartphone, Laptop, Copy, Check, Globe, Info } from 'lucide-react';
+import { ArrowLeft, Smartphone, Laptop, Copy, Check, Globe, Info, User, Cpu, Monitor, Cable, Layers } from 'lucide-react';
 import { getPersonaColor } from '../utils/persona';
 
 const GLOSSARY = {
@@ -154,13 +154,16 @@ const ActionButton = ({ icon: Icon, label, onClick }) => {
   );
 };
 
-const SpecGroup = ({ title, items }) => {
+const SpecGroup = ({ title, icon: Icon, items }) => {
   const validItems = items.filter(item => item.value && item.value.toLowerCase() !== 'none' && item.value !== '');
   if (validItems.length === 0) return null;
 
   return (
     <div className="specs-card" style={{ marginBottom: '1rem' }}>
-      <h3 className="specs-card-title">{title}</h3>
+      <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {Icon && <Icon size={20} style={{ color: 'var(--text-secondary)' }} />}
+        <span>{title}</span>
+      </h3>
       <div className="specs-list">
         {validItems.map((spec, idx) => (
           <div className="spec-row" key={idx}>
@@ -236,14 +239,17 @@ const DeviceDetail = ({ device, onBack }) => {
 
         {device['Persona Extended'] && (
           <div className="specs-card" style={{ marginBottom: '1rem' }}>
-            <h3 className="specs-card-title">Persona Overview</h3>
+            <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <User size={20} style={{ color: 'var(--text-secondary)' }} />
+              <span>Persona Overview</span>
+            </h3>
             <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
               {device['Persona Extended']}
             </p>
           </div>
         )}
 
-        <SpecGroup title="Specs" items={[
+        <SpecGroup title="Specs" icon={Cpu} items={[
           { label: 'MSRP', value: device.MSRP },
           { label: 'Processor', value: device.Processor },
           { label: 'NPU', value: device.NPU },
@@ -252,7 +258,7 @@ const DeviceDetail = ({ device, onBack }) => {
           { label: 'Formfactor', value: device.Formfactor }
         ]} />
 
-        <SpecGroup title="Screen" items={[
+        <SpecGroup title="Screen" icon={Monitor} items={[
           { label: 'Screen Size', value: device['Screen Size'] },
           { label: 'Screen Type', value: device['Screen Type'] },
           { label: 'Resolution', value: device['Resolution'] },
@@ -263,7 +269,7 @@ const DeviceDetail = ({ device, onBack }) => {
           { label: 'Pen Compatibility', value: device['Pen Compatibility?'] }
         ]} />
 
-        <SpecGroup title="Ports & Connectivity" items={[
+        <SpecGroup title="Ports & Connectivity" icon={Cable} items={[
           { label: 'USB-A', value: device['USB-A'] },
           { label: 'USB-C', value: device['USB-C'] },
           { label: 'Thunderbolt 4', value: device['Thunderbolt 4'] },
@@ -274,7 +280,7 @@ const DeviceDetail = ({ device, onBack }) => {
           { label: 'Bluetooth Version', value: device['Bluetooth Version'] }
         ]} />
 
-        <SpecGroup title="Other" items={[
+        <SpecGroup title="Other" icon={Layers} items={[
           { label: 'Keyboard Size', value: device['Keyboard size'] },
           { label: 'Backlit Keyboard', value: device['Backlit Keyboard?'] },
           { label: 'Weight', value: device.Weight },
