@@ -4,6 +4,13 @@ import { ArrowLeft, Smartphone, Laptop, Copy, Check, Globe, Info, User, Cpu, Mon
 import { getPersonaColor } from '../utils/persona';
 
 const GLOSSARY = {
+  'color accuracy': 'Color Accuracy: Measures how precisely the screen displays colors (e.g., sRGB, DCI-P3). Crucial for Content Creators, designers, and photographers who need exact color representation.',
+  'screen type': 'Screen Type: The display technology used (e.g., IPS LCD, OLED). Determines color vibrancy, contrast ratios, battery consumption, and viewing angles.',
+  'screen size': 'Screen Size: The diagonal measurement of the screen in inches. Smaller screens (10"-13") prioritize portability for students and travelers, while larger screens (15"-17") offer more workspace for multitasking.',
+  'screen brightness': 'Screen Brightness: Measured in nits. Higher values (300-400+ nits) mean the screen is easier to read in bright outdoor conditions or under direct light.',
+  'pen compatibility': 'Pen Compatibility: Support for a digital stylus pen. Essential for students taking handwritten notes, designers sketching, or professionals marking up documents.',
+  'refresh rate': 'Refresh Rate: How many times per second the screen updates. Higher rates (e.g., 120Hz, 144Hz) mean smoother animation, scrolling, and gaming.',
+  'aspect ratio': 'Aspect Ratio: The proportional relationship between screen width and height (e.g., 16:9 widescreen, 16:10 or 3:2 taller screens). Taller screens display more vertical content, ideal for productivity.',
   'ips': 'In-Plane Switching: A screen technology known for great colors and wide viewing angles.',
   'oled': 'Organic Light Emitting Diode: Provides perfect blacks, infinite contrast, and vibrant colors.',
   'emmc': 'Embedded MultiMediaCard: Basic, affordable flash storage common in entry-level devices.',
@@ -16,7 +23,6 @@ const GLOSSARY = {
   'hdmi': 'High-Definition Multimedia Interface: Standard port for connecting to TVs and monitors.',
   'msrp': 'Manufacturer’s Suggested Retail Price.',
   'resolution': 'The number of pixels on the screen (width x height). Higher means sharper text and images.',
-  'refresh rate': 'How many times per second the screen updates. Higher (e.g., 120Hz) means smoother motion.',
   'formfactor': 'The physical design of the device (e.g., Clamshell laptop, Tablet, 2-in-1 Convertible).',
   'wi-fi': 'Wireless standard used for connecting to local networks and the internet.',
   'bluetooth': 'Wireless standard for connecting peripherals like headphones and mice.',
@@ -37,9 +43,11 @@ const SpecText = ({ text }) => {
   
   if (!text) return null;
   
-  // Look for a glossary match
+  // Look for a glossary match, sorting keys by descending length to prevent substring collisions
   const textStr = String(text).toLowerCase();
-  const matchKey = Object.keys(GLOSSARY).find(key => textStr.includes(key));
+  const matchKey = Object.keys(GLOSSARY)
+    .sort((a, b) => b.length - a.length)
+    .find(key => textStr.includes(key));
 
   if (!matchKey) return <span>{text}</span>;
 
