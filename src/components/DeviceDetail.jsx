@@ -167,7 +167,7 @@ const SpecGroup = ({ title, icon: Icon, items }) => {
   if (validItems.length === 0) return null;
 
   return (
-    <div className="specs-card" style={{ marginBottom: '1rem' }}>
+    <div className="specs-card" style={{ height: '100%' }}>
       <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {Icon && <Icon size={20} style={{ color: 'var(--text-secondary)' }} />}
         <span>{title}</span>
@@ -245,55 +245,57 @@ const DeviceDetail = ({ device, onBack }) => {
           <ActionButton icon={Globe} label="Bestbuy.com" onClick={() => openLink(device['Device Online Listing'])} />
         </div>
 
-        {device['Persona Extended'] && (
-          <div className="specs-card" style={{ marginBottom: '1rem' }}>
-            <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <User size={20} style={{ color: 'var(--text-secondary)' }} />
-              <span>Persona Overview</span>
-            </h3>
-            <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-              {device['Persona Extended']}
-            </p>
-          </div>
-        )}
+        <div className="specs-grid">
+          {device['Persona Extended'] && (
+            <div className="specs-card" style={{ height: '100%' }}>
+              <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <User size={20} style={{ color: 'var(--text-secondary)' }} />
+                <span>Persona Overview</span>
+              </h3>
+              <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                {device['Persona Extended']}
+              </p>
+            </div>
+          )}
 
-        <SpecGroup title="Specs" icon={Cpu} items={[
-          { label: 'MSRP', value: device.MSRP },
-          { label: 'Processor', value: device.Processor },
-          { label: 'NPU', value: device.NPU },
-          { label: 'RAM', value: device['RAM/Memory'] },
-          { label: 'Storage', value: device.Storage },
-          { label: 'Formfactor', value: device.Formfactor }
-        ]} />
+          <SpecGroup title="Specs" icon={Cpu} items={[
+            { label: 'MSRP', value: device.MSRP },
+            { label: 'Processor', value: device.Processor },
+            { label: 'NPU', value: device.NPU },
+            { label: 'RAM', value: device['RAM/Memory'] },
+            { label: 'Storage', value: device.Storage },
+            { label: 'Formfactor', value: device.Formfactor }
+          ]} />
 
-        <SpecGroup title="Screen" icon={Monitor} items={[
-          { label: 'Screen Size', value: device['Screen Size'] },
-          { label: 'Screen Type', value: device['Screen Type'] },
-          { label: 'Resolution', value: device['Resolution'] },
-          { label: 'Aspect Ratio', value: device['Aspect Ratio'] },
-          { label: 'Screen Brightness', value: device['Screen Brightness (nits)'] ? `${device['Screen Brightness (nits)']} nits` : '' },
-          { label: 'Color Accuracy', value: device['Color Accuracy'] },
-          { label: 'Touchscreen', value: device['Touchscreen?'] },
-          { label: 'Pen Compatibility', value: device['Pen Compatibility?'] }
-        ]} />
+          <SpecGroup title="Screen" icon={Monitor} items={[
+            { label: 'Screen Size', value: device['Screen Size'] },
+            { label: 'Screen Type', value: device['Screen Type'] },
+            { label: 'Resolution', value: device['Resolution'] },
+            { label: 'Aspect Ratio', value: device['Aspect Ratio'] },
+            { label: 'Screen Brightness', value: device['Screen Brightness (nits)'] ? `${device['Screen Brightness (nits)']} nits` : '' },
+            { label: 'Color Accuracy', value: device['Color Accuracy'] },
+            { label: 'Touchscreen', value: device['Touchscreen?'] },
+            { label: 'Pen Compatibility', value: device['Pen Compatibility?'] }
+          ]} />
 
-        <SpecGroup title="Ports & Connectivity" icon={Cable} items={[
-          { label: 'USB-A', value: device['USB-A'] },
-          { label: 'USB-C', value: device['USB-C'] },
-          { label: 'Thunderbolt 4', value: device['Thunderbolt 4'] },
-          { label: 'HDMI', value: device['HDMI'] },
-          { label: 'SD Card Slot', value: device['SD Card Slot'] },
-          { label: 'Headphone Jack', value: device['Headphone Jack'] },
-          { label: 'Wi-Fi standard', value: device['Wi-Fi standard'] },
-          { label: 'Bluetooth Version', value: device['Bluetooth Version'] }
-        ]} />
+          <SpecGroup title="Ports & Connectivity" icon={Cable} items={[
+            { label: 'USB-A', value: device['USB-A'] },
+            { label: 'USB-C', value: device['USB-C'] },
+            { label: 'Thunderbolt 4', value: device['Thunderbolt 4'] },
+            { label: 'HDMI', value: device['HDMI'] },
+            { label: 'SD Card Slot', value: device['SD Card Slot'] },
+            { label: 'Headphone Jack', value: device['Headphone Jack'] },
+            { label: 'Wi-Fi standard', value: device['Wi-Fi standard'] },
+            { label: 'Bluetooth Version', value: device['Bluetooth Version'] }
+          ]} />
 
-        <SpecGroup title="Other" icon={Layers} items={[
-          { label: 'Keyboard Size', value: device['Keyboard size'] },
-          { label: 'Backlit Keyboard', value: device['Backlit Keyboard?'] },
-          { label: 'Weight', value: device.Weight },
-          { label: 'Battery Life', value: device['Battery Life'] }
-        ]} />
+          <SpecGroup title="Other" icon={Layers} items={[
+            { label: 'Keyboard Size', value: device['Keyboard size'] },
+            { label: 'Backlit Keyboard', value: device['Backlit Keyboard?'] },
+            { label: 'Weight', value: device.Weight },
+            { label: 'Battery Life', value: device['Battery Life'] }
+          ]} />
+        </div>
       </div>
     </motion.div>
   );
