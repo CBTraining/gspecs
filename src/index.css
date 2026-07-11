@@ -148,7 +148,7 @@ body {
   left: 50%;
   width: 250%; /* Giant spinning square */
   aspect-ratio: 1;
-  background: conic-gradient(from 0deg, #4285F4, #EA4335, #FBBC04, #FBBC04, #4285F4);
+  background: conic-gradient(from 0deg, #4285F4, #EA4335, #FBBC04, #34A853, #4285F4);
   transform: translate(-50%, -50%) rotate(0deg);
 }
 
@@ -204,7 +204,7 @@ body {
   left: 50%;
   width: 250%; /* Match glow spinner */
   aspect-ratio: 1;
-  background: conic-gradient(from 0deg, #4285F4, #EA4335, #FBBC04, #FBBC04, #4285F4);
+  background: conic-gradient(from 0deg, #4285F4, #EA4335, #FBBC04, #34A853, #4285F4);
   z-index: -2;
   opacity: 0;
   transition: opacity 0.2s ease;
