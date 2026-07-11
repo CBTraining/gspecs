@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Smartphone, Laptop, Filter } from 'lucide-react';
+import { Smartphone, Laptop, Filter, Search } from 'lucide-react';
 import FilterModal from './FilterModal';
 import { getPersonaColor } from '../utils/persona';
 
@@ -21,8 +21,9 @@ const ImageWithFallback = ({ src, alt, isLaptop, sku }) => {
   );
 };
 
-const DeviceList = ({ devices, onSelectDevice }) => {
+const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleComparison, onOpenQuiz }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState(() => {
     try {
       const saved = localStorage.getItem('gspecs_activeFilters');
@@ -36,10 +37,32 @@ const DeviceList = ({ devices, onSelectDevice }) => {
     localStorage.setItem('gspecs_activeFilters', JSON.stringify(activeFilters));
   }, [activeFilters]);
 
-  // Filter devices based on activeFilters
+  // Filter devices based on activeFilters and searchQuery
   const filteredDevices = useMemo(() => {
     return devices.filter(device => {
+      // 1. Search Query Filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const nameMatch = device['Device Name']?.toLowerCase()?.includes(query);
+        const skuMatch = device.SKU?.toLowerCase()?.includes(query);
+        const processorMatch = device.Processor?.toLowerCase()?.includes(query);
+        const brandMatch = device['OEM (brand)']?.toLowerCase()?.includes(query);
+        const personaMatch = device.Persona?.toLowerCase()?.includes(query);
+        
+        if (!nameMatch && !skuMatch && !processorMatch && !brandMatch && !personaMatch) {
+          return false;
+        }
+      }
+
+      // 2. Active Category Filters
       for (const [key, selectedValues] of Object.entries(activeFilters)) {
+        if (key === 'priceRange') {
+          const price = Number(device.MSRP?.replace(/[^0-9.]/g, '') || 0);
+          if (price < selectedValues[0] || price > selectedValues[1]) {
+            return false;
+          }
+          continue;
+        }
         if (selectedValues.length === 0) continue;
         if (!selectedValues.includes(device[key])) {
           return false;
@@ -47,7 +70,7 @@ const DeviceList = ({ devices, onSelectDevice }) => {
       }
       return true;
     });
-  }, [devices, activeFilters]);
+  }, [devices, activeFilters, searchQuery]);
 
   // Group filtered devices by OEM and extract brands, memoized
   const { groupedDevices, brands } = useMemo(() => {
@@ -94,10 +117,109 @@ const DeviceList = ({ devices, onSelectDevice }) => {
         </button>
       </div>
 
+      {/* Search Input Bar */}
+      <div 
+        style={{
+          position: 'relative',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          maxWidth: '500px'
+        }}
+      >
+        <Search 
+          size={18} 
+          style={{
+            position: 'absolute',
+            left: '1rem',
+            color: 'var(--text-secondary)',
+            pointerEvents: 'none'
+          }} 
+        />
+        <input
+          type="text"
+          placeholder="Search devices by name, SKU, or specs..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '0.65rem 1rem 0.65rem 2.5rem',
+            borderRadius: '1.5rem',
+            border: '1px solid var(--border-color)',
+            backgroundColor: 'var(--surface-color)',
+            color: 'var(--text-primary)',
+            fontSize: '0.9rem',
+            outline: 'none',
+            fontFamily: 'inherit',
+            transition: 'border-color 0.2s ease'
+          }}
+          className="search-input"
+        />
+      </div>
+
+      {/* Quiz Prompt Banner */}
+      {onOpenQuiz && (
+        <div 
+          className="specs-card" 
+          style={{ 
+            padding: '1.25rem', 
+            marginBottom: '1.5rem', 
+            borderRadius: '1.25rem', 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            gap: '1.5rem',
+            background: 'linear-gradient(135deg, var(--surface-color) 0%, var(--surface-hover) 100%)',
+            border: '1px solid var(--border-color)',
+            boxShadow: 'var(--shadow-sm)'
+          }}
+        >
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '1.75rem' }}>✨</span>
+            <div>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.15rem' }}>
+                Find Your Gragglebook
+              </h4>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                Answer 3 quick questions to discover the perfect model matching your budget & needs.
+              </p>
+            </div>
+          </div>
+          <button 
+            className="btn-primary" 
+            onClick={onOpenQuiz}
+            style={{ 
+              padding: '0.5rem 1rem', 
+              fontSize: '0.85rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.25rem',
+              borderRadius: '1rem',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <span>Take Quiz</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+      )}
+
       {brands.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
           <p>No devices found matching your filters.</p>
-          <button className="btn-primary" style={{ marginTop: '1rem', margin: '0 auto' }} onClick={() => setActiveFilters({})}>Clear Filters</button>
+          <button 
+            className="btn-primary" 
+            style={{ marginTop: '1rem', margin: '0 auto' }} 
+            onClick={() => {
+              setActiveFilters({});
+              setSearchQuery('');
+            }}
+          >
+            Clear Filters
+          </button>
         </div>
       ) : (
         brands.map(brand => (
@@ -136,6 +258,43 @@ const DeviceList = ({ devices, onSelectDevice }) => {
                       }}
                     >
                       <div className="card-spotlight"></div>
+                      
+                      {/* Compare Checkbox */}
+                      {onToggleComparison && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleComparison(device);
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: '0.75rem',
+                            right: '0.75rem',
+                            zIndex: 10,
+                            width: '22px',
+                            height: '22px',
+                            borderRadius: '50%',
+                            border: `2px solid ${comparisonDevices.some(d => d.SKU === device.SKU) ? 'var(--accent-color)' : 'var(--border-color)'}`,
+                            backgroundColor: comparisonDevices.some(d => d.SKU === device.SKU) ? 'var(--accent-color)' : 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            padding: 0,
+                            outline: 'none',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          }}
+                          aria-label="Compare device"
+                        >
+                          {comparisonDevices.some(d => d.SKU === device.SKU) && (
+                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M1.5 4L3.5 6L8.5 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </button>
+                      )}
+
                       <div className="device-card-content-vertical">
                         <motion.div className="device-card-image-large" layoutId={`image-${device.SKU}`}>
                           <ImageWithFallback src={device['Device Image']} alt={device['Device Name']} isLaptop={isLaptop} />

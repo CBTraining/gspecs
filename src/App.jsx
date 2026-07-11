@@ -1,15 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
-import { Moon, Sun, Laptop, ArrowLeft } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Moon, Sun, Laptop, ArrowLeft, BookOpen, Trash2, GitCompare, X, Smartphone } from 'lucide-react';
 import { fetchDeviceData } from './utils/fetchData';
 import DeviceList from './components/DeviceList';
 import DeviceDetail from './components/DeviceDetail';
+import GlossaryView from './components/GlossaryView';
+import CompareModal from './components/CompareModal';
+import QuizModal from './components/QuizModal';
 
 function App() {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('gragglebook'); // 'gragglebook' | 'glossary'
+  
+  // Comparison state
+  const [comparisonDevices, setComparisonDevices] = useState([]);
+  const [isComparing, setIsComparing] = useState(false);
+  const [quizOpen, setQuizOpen] = useState(false);
+
+  const toggleComparison = (device) => {
+    setComparisonDevices(prev => {
+      if (prev.find(d => d.SKU === device.SKU)) {
+        return prev.filter(d => d.SKU !== device.SKU);
+      }
+      if (prev.length >= 3) {
+        alert("You can compare up to 3 devices at a time.");
+        return prev;
+      }
+      return [...prev, device];
+    });
+  };
+
+  const clearComparison = () => {
+    setComparisonDevices([]);
+  };
   
   // Theme state: load from localStorage, fallback to system preference
   const [theme, setTheme] = useState(() => {
@@ -100,9 +126,25 @@ function App() {
           </div>
 
           <nav className="desktop-nav">
-            <div className="nav-item active">
+            <div 
+              className={`nav-item ${activeTab === 'gragglebook' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('gragglebook');
+                setSelectedDevice(null);
+              }}
+            >
               <Laptop size={20} />
               <span>Gragglebook</span>
+            </div>
+            <div 
+              className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('glossary');
+                setSelectedDevice(null);
+              }}
+            >
+              <BookOpen size={20} />
+              <span>Glossary</span>
             </div>
           </nav>
 
@@ -132,8 +174,16 @@ function App() {
             <div style={{ textAlign: 'center', padding: '3rem', color: 'red' }}>
               {error}
             </div>
+          ) : activeTab === 'glossary' ? (
+            <GlossaryView />
           ) : (
-            <DeviceList devices={devices} onSelectDevice={setSelectedDevice} />
+            <DeviceList 
+              devices={devices} 
+              onSelectDevice={setSelectedDevice} 
+              comparisonDevices={comparisonDevices}
+              onToggleComparison={toggleComparison}
+              onOpenQuiz={() => setQuizOpen(true)}
+            />
           )}
         </main>
 
@@ -149,10 +199,146 @@ function App() {
         )}
       </AnimatePresence>
 
+      {/* Floating Comparison Bar */}
+      <AnimatePresence>
+        {comparisonDevices.length > 0 && !selectedDevice && activeTab !== 'glossary' && (
+          <motion.div
+            initial={{ y: 100, x: '-50%', opacity: 0 }}
+            animate={{ y: 0, x: '-50%', opacity: 1 }}
+            exit={{ y: 100, x: '-50%', opacity: 0 }}
+            style={{
+              position: 'fixed',
+              bottom: '5.5rem', // Floating just above bottom navigation
+              left: '50%',
+              zIndex: 140,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1.5rem',
+              backgroundColor: 'var(--glass-bg)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '2rem',
+              padding: '0.6rem 1.2rem',
+              boxShadow: 'var(--shadow-lg)',
+              width: '90%',
+              maxWidth: '600px'
+            }}
+          >
+            {/* Thumbnails list */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {comparisonDevices.map(device => {
+                const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
+                return (
+                  <div 
+                    key={device.SKU} 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.4rem',
+                      backgroundColor: 'var(--surface-color)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '1.5rem',
+                      padding: '0.25rem 0.6rem',
+                      fontSize: '0.8rem',
+                      fontWeight: '500'
+                    }}
+                  >
+                    <div style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {device['Device Image'] ? (
+                        <img 
+                          src={device['Device Image']} 
+                          alt="" 
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        isLaptop ? <Laptop size={14} /> : <Smartphone size={14} />
+                      )}
+                    </div>
+                    <span style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {device['Device Name']}
+                    </span>
+                    <button 
+                      onClick={() => toggleComparison(device)}
+                      style={{ 
+                        background: 'none', 
+                        border: 'none', 
+                        padding: 0, 
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      aria-label="Remove from compare"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button 
+                onClick={clearComparison}
+                className="btn-secondary"
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.25rem', borderRadius: '1rem' }}
+              >
+                <Trash2 size={14} />
+                <span>Clear</span>
+              </button>
+              <button 
+                onClick={() => setIsComparing(true)}
+                className="btn-primary"
+                style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.25rem', borderRadius: '1rem' }}
+                disabled={comparisonDevices.length < 2}
+              >
+                <GitCompare size={14} />
+                <span>Compare ({comparisonDevices.length})</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <CompareModal 
+        isOpen={isComparing} 
+        onClose={() => setIsComparing(false)} 
+        devices={comparisonDevices} 
+      />
+
+      <QuizModal 
+        isOpen={quizOpen} 
+        onClose={() => setQuizOpen(false)} 
+        devices={devices} 
+        onSelectDevice={setSelectedDevice} 
+      />
+
       <nav className="bottom-nav" style={{ zIndex: 150 }}>
-        <div className="nav-item active" onClick={() => setSelectedDevice(null)}>
+        <div 
+          className={`nav-item ${activeTab === 'gragglebook' ? 'active' : ''}`} 
+          onClick={() => {
+            setActiveTab('gragglebook');
+            setSelectedDevice(null);
+          }}
+        >
           <Laptop size={24} />
           <span>Gragglebook</span>
+        </div>
+        <div 
+          className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`} 
+          onClick={() => {
+            setActiveTab('glossary');
+            setSelectedDevice(null);
+          }}
+        >
+          <BookOpen size={24} />
+          <span>Glossary</span>
         </div>
       </nav>
     </div>

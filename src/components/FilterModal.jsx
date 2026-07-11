@@ -14,19 +14,30 @@ const FILTER_CATEGORIES = [
   { key: 'Pen Compatibility?', label: 'Pen Compatible' }
 ];
 
+const parsePrice = (priceStr) => {
+  if (!priceStr) return 0;
+  return Number(priceStr.replace(/[^0-9.]/g, ''));
+};
+
 const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
   const [localFilters, setLocalFilters] = useState(activeFilters || {});
+
+  // Extract catalog price limits dynamically
+  const prices = devices.map(d => parsePrice(d.MSRP)).filter(p => p > 0);
+  const catalogMinPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const catalogMaxPrice = prices.length > 0 ? Math.max(...prices) : 2000;
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setLocalFilters(activeFilters || {});
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, activeFilters]);
 
   // Extract unique values for each category
   const filterOptions = FILTER_CATEGORIES.reduce((acc, cat) => {
@@ -47,9 +58,15 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
   };
 
   const handleApply = () => {
-    // clean up empty arrays
+    // clean up empty arrays (except priceRange)
     const cleanedFilters = Object.fromEntries(
-      Object.entries(localFilters).filter(([_, vals]) => vals.length > 0)
+      Object.entries(localFilters).filter(([key, vals]) => {
+        if (key === 'priceRange') {
+          // Keep price range if it restricts the catalog max price
+          return vals[1] < catalogMaxPrice;
+        }
+        return vals.length > 0;
+      })
     );
     onApply(cleanedFilters);
     onClose();
@@ -60,6 +77,8 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
     onApply({});
     onClose();
   };
+
+  const priceRange = localFilters.priceRange || [catalogMinPrice, catalogMaxPrice];
 
   const modalContent = (
     <AnimatePresence>
@@ -87,6 +106,43 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
             </div>
             
             <div className="filter-body">
+              {/* MSRP Range Slider */}
+              {prices.length > 0 && (
+                <div className="filter-section" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1.25rem', marginBottom: '1.25rem' }}>
+                  <h4 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Budget Limit</span>
+                    <span style={{ color: 'var(--accent-color)', fontWeight: '700' }}>Under ${priceRange[1]}</span>
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
+                    <input 
+                      type="range" 
+                      min={catalogMinPrice} 
+                      max={catalogMaxPrice} 
+                      step={50}
+                      value={priceRange[1]} 
+                      onChange={(e) => {
+                        const maxVal = Number(e.target.value);
+                        setLocalFilters(prev => ({
+                          ...prev,
+                          priceRange: [catalogMinPrice, maxVal]
+                        }));
+                      }}
+                      style={{
+                        width: '100%',
+                        accentColor: 'var(--accent-color)',
+                        height: '6px',
+                        borderRadius: '3px',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                      <span>Min: ${catalogMinPrice}</span>
+                      <span>Max: ${catalogMaxPrice}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {FILTER_CATEGORIES.map(cat => {
                 if (!filterOptions[cat.key] || filterOptions[cat.key].length === 0) return null;
 
