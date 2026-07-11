@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Smartphone, Laptop, Copy, Check, Globe, Info, User, Cpu, Monitor, Cable, Layers, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Smartphone, Laptop, Copy, Check, Globe, Info, User, Cpu, Monitor, Cable, Layers, ShoppingBag, Share2 } from 'lucide-react';
 import { getPersonaColor } from '../utils/persona';
 
 const GLOSSARY = {
@@ -136,27 +136,9 @@ const ImageWithFallback = ({ src, alt, isLaptop }) => {
 };
 
 const ActionButton = ({ icon: Icon, label, onClick }) => {
-  const [copied, setCopied] = useState(false);
-  const timeoutRef = useRef(null);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
-
-  const handleClick = () => {
-    onClick();
-    if (label.includes('UPC') || label.includes('SKU')) {
-      setCopied(true);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
   return (
-    <button className="action-btn" onClick={handleClick}>
-      {copied ? <Check size={20} /> : <Icon size={20} />}
+    <button className="action-btn" onClick={onClick}>
+      <Icon size={20} />
       <span>{label}</span>
     </button>
   );
@@ -186,6 +168,23 @@ const SpecGroup = ({ title, icon: Icon, items }) => {
 
 const DeviceDetail = ({ device, onBack }) => {
   if (!device) return null;
+
+  const [toastMessage, setToastMessage] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    };
+  }, []);
+
+  const showToast = (message) => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToastMessage(message);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 2500);
+  };
 
   const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
 
@@ -240,9 +239,22 @@ const DeviceDetail = ({ device, onBack }) => {
         </motion.div>
 
         <div className="action-buttons-row">
-          <ActionButton icon={Copy} label="SKU" onClick={() => copyToClipboard(device.SKU)} />
-          <ActionButton icon={Copy} label="UPC" onClick={() => copyToClipboard(device.UPC)} />
-          <ActionButton icon={Globe} label="Bestbuy.com" onClick={() => openLink(device['Device Online Listing'])} />
+          <ActionButton icon={Copy} label="SKU" onClick={() => {
+            copyToClipboard(device.SKU);
+            showToast("SKU copied to clipboard.");
+          }} />
+          <ActionButton icon={Copy} label="UPC" onClick={() => {
+            copyToClipboard(device.UPC);
+            showToast("UPC copied to clipboard.");
+          }} />
+          <ActionButton icon={Globe} label="Bestbuy.com" onClick={() => {
+            openLink(device['Device Online Listing']);
+            showToast("Opening Best Buy website...");
+          }} />
+          <ActionButton icon={Share2} label="Share Link" onClick={() => {
+            copyToClipboard(device['Device Online Listing']);
+            showToast("Link copied to clipboard.");
+          }} />
         </div>
 
         <div className="specs-grid">
@@ -326,6 +338,39 @@ const DeviceDetail = ({ device, onBack }) => {
           ]} />
         </div>
       </div>
+
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, x: '-50%', scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, x: '-50%', scale: 1 }}
+            exit={{ opacity: 0, y: 20, x: '-50%', scale: 0.9 }}
+            style={{
+              position: 'fixed',
+              bottom: '5.5rem',
+              left: '50%',
+              zIndex: 2000,
+              backgroundColor: 'var(--glass-bg)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '2rem',
+              padding: '0.75rem 1.5rem',
+              boxShadow: 'var(--shadow-lg)',
+              color: 'var(--text-primary)',
+              fontWeight: '500',
+              fontSize: '0.9rem',
+              pointerEvents: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <Check size={16} style={{ color: 'var(--accent-color)' }} />
+            <span>{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
