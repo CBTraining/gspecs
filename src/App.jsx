@@ -94,7 +94,7 @@ function App() {
               <img 
                 src={theme === 'dark' ? '/gspecs_light.svg' : '/gspecs_dark.svg'} 
                 alt="G-Specs" 
-                style={{ height: '36px' }} 
+                style={{ height: '28px' }} 
               />
             </div>
           </div>
