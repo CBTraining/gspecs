@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Smartphone, Laptop, Copy, Check, Globe, Info, User, Cpu, Monitor, Cable, Layers } from 'lucide-react';
+import { ArrowLeft, Smartphone, Laptop, Copy, Check, Globe, Info, User, Cpu, Monitor, Cable, Layers, ShoppingBag } from 'lucide-react';
 import { getPersonaColor } from '../utils/persona';
 
 const GLOSSARY = {
@@ -255,6 +255,35 @@ const DeviceDetail = ({ device, onBack }) => {
               <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
                 {device['Persona Extended']}
               </p>
+            </div>
+          )}
+
+          {device['Basket Recommendations'] && (
+            <div className="specs-card" style={{ height: '100%' }}>
+              <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <ShoppingBag size={20} style={{ color: 'var(--text-secondary)' }} />
+                <span>Basket Recommendations</span>
+              </h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
+                {device['Basket Recommendations'].split(',').map((item, idx) => (
+                  <span 
+                    key={idx} 
+                    style={{
+                      backgroundColor: 'var(--surface-hover)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '0.5rem',
+                      padding: '0.4rem 0.8rem',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      color: 'var(--text-primary)',
+                      display: 'inline-flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    {item.trim()}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 
