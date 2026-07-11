@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, ArrowRight, RefreshCw, Check } from 'lucide-react';
+import { X, Sparkles, ArrowRight, RefreshCw, Check, Laptop, Smartphone } from 'lucide-react';
 import { getPersonaColor } from '../utils/persona';
 
 const parsePrice = (priceStr) => {
