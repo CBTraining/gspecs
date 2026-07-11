@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Smartphone, Laptop, Copy, Check, Globe, Info } from 'lucide-react';
+import { getPersonaColor } from '../utils/persona';
 
 const GLOSSARY = {
   'ips': 'In-Plane Switching: A screen technology known for great colors and wide viewing angles.',
@@ -207,8 +208,17 @@ const DeviceDetail = ({ device, onBack }) => {
     >
       <div className="container content-area">
         <motion.div className="detail-header-card" layoutId={`card-${device.SKU}`}>
-          <motion.h2 className="detail-header-title">{device['Device Name']}</motion.h2>
-          <div className="detail-header-subtitle">{device.Formfactor || device['OEM (brand)']}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <motion.h2 className="detail-header-title">{device['Device Name']}</motion.h2>
+              <div className="detail-header-subtitle">{device.Formfactor || device['OEM (brand)']}</div>
+            </div>
+            {device.Persona && (
+              <span className="persona-tag" style={{ backgroundColor: getPersonaColor(device.Persona) }}>
+                {device.Persona}
+              </span>
+            )}
+          </div>
         </motion.div>
 
         <motion.div className="detail-image-card" layoutId={`image-${device.SKU}`}>
@@ -223,6 +233,15 @@ const DeviceDetail = ({ device, onBack }) => {
           <ActionButton icon={Copy} label="UPC" onClick={() => copyToClipboard(device.UPC)} />
           <ActionButton icon={Globe} label="Bestbuy.com" onClick={() => openLink(device['Device Online Listing'])} />
         </div>
+
+        {device['Persona Extended'] && (
+          <div className="specs-card" style={{ marginBottom: '1rem' }}>
+            <h3 className="specs-card-title">Persona Overview</h3>
+            <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+              {device['Persona Extended']}
+            </p>
+          </div>
+        )}
 
         <SpecGroup title="Specs" items={[
           { label: 'MSRP', value: device.MSRP },

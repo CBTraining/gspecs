@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Smartphone, Laptop, Filter } from 'lucide-react';
 import FilterModal from './FilterModal';
+import { getPersonaColor } from '../utils/persona';
 
 const ImageWithFallback = ({ src, alt, isLaptop, sku }) => {
   const [error, setError] = React.useState(false);
@@ -145,6 +146,11 @@ const DeviceList = ({ devices, onSelectDevice }) => {
                             {device['Device Name']}
                           </motion.h3>
                           <div className="device-sku-text">SKU: {device.SKU || 'N/A'}</div>
+                          {device.Persona && (
+                            <span className="persona-tag" style={{ backgroundColor: getPersonaColor(device.Persona) }}>
+                              {device.Persona}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

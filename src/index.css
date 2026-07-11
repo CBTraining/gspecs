@@ -533,6 +533,22 @@ body {
   width: fit-content;
 }
 
+.persona-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ffffff !important;
+  margin-top: 0.35rem;
+  width: fit-content;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.1;
+}
+
 /* Vertical Card Layout for Grouped Brands */
 .device-card-content-vertical {
   display: flex;
@@ -707,6 +723,12 @@ body {
   .card {
     border-radius: 0.5rem;
     padding: 0.5rem !important;
+  }
+
+  .persona-tag {
+    font-size: 0.6rem !important;
+    padding: 0.15rem 0.4rem !important;
+    margin-top: 0.25rem !important;
   }
 }
 
