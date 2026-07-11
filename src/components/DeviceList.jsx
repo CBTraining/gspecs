@@ -268,14 +268,14 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
                           }}
                           style={{
                             position: 'absolute',
-                            top: '0.75rem',
+                            bottom: '0.75rem',
                             right: '0.75rem',
                             zIndex: 10,
                             width: '22px',
                             height: '22px',
                             borderRadius: '50%',
-                            border: `2px solid ${comparisonDevices.some(d => d.SKU === device.SKU) ? 'var(--accent-color)' : 'var(--border-color)'}`,
-                            backgroundColor: comparisonDevices.some(d => d.SKU === device.SKU) ? 'var(--accent-color)' : 'transparent',
+                            border: `2px solid ${comparisonDevices.some(d => d.SKU === device.SKU) ? 'var(--accent-color)' : '#e5e7eb'}`,
+                            backgroundColor: comparisonDevices.some(d => d.SKU === device.SKU) ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.15)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
