@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, ArrowRight, RefreshCw, Check, Laptop, Smartphone } from 'lucide-react';
@@ -27,7 +27,22 @@ const QuizModal = ({ isOpen, onClose, devices, onSelectDevice }) => {
     priority: ''
   });
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      setStep(1);
+      setAnswers({
+        persona: '',
+        budget: Infinity,
+        priority: ''
+      });
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const handleReset = () => {
     setStep(1);

@@ -38,8 +38,6 @@ const CompareModal = ({ isOpen, onClose, devices }) => {
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const modalContent = (
     <AnimatePresence>
       {isOpen && (
