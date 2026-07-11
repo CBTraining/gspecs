@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 const FILTER_CATEGORIES = [
+  { key: 'Persona', label: 'Persona' },
   { key: 'OEM (brand)', label: 'Brand' },
   { key: 'Formfactor', label: 'Form Factor' },
   { key: 'Screen Size', label: 'Screen Size' },
