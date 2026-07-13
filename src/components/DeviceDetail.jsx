@@ -277,7 +277,10 @@ const DeviceDetail = ({ device, onBack }) => {
             icon={Share2} 
             label="Share Link" 
             successLabel="Link Copied!" 
-            onClick={() => copyToClipboard(device['Device Online Listing'])} 
+            onClick={() => {
+              const shareUrl = `${window.location.origin}${window.location.pathname}?sku=${encodeURIComponent(device.SKU)}`;
+              copyToClipboard(shareUrl);
+            }} 
           />
         </div>
 

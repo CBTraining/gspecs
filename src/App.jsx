@@ -74,6 +74,16 @@ function App() {
         const data = await fetchDeviceData();
         setDevices(data);
         setLoading(false);
+
+        // Deep link: check for ?sku=SKU parameter on page load
+        const params = new URLSearchParams(window.location.search);
+        const skuParam = params.get('sku');
+        if (skuParam) {
+          const deviceMatch = data.find(d => d.SKU === skuParam);
+          if (deviceMatch) {
+            setSelectedDevice(deviceMatch);
+          }
+        }
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load device data.");
@@ -83,12 +93,19 @@ function App() {
     
     loadData();
   }, []);
+
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
     if (selectedDevice) {
       document.body.style.overflow = 'hidden';
+      params.set('sku', selectedDevice.SKU);
     } else {
       document.body.style.overflow = '';
+      params.delete('sku');
     }
+    const newRelativePathQuery = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState({}, '', newRelativePathQuery);
+
     return () => {
       document.body.style.overflow = '';
     };
