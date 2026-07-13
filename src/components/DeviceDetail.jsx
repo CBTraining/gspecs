@@ -147,20 +147,32 @@ const ImageWithFallback = ({ src, alt, isLaptop }) => {
 const ActionButton = ({ icon: Icon, label, successLabel, successIcon: SuccessIcon = Check, onClick }) => {
   const [copied, setCopied] = useState(false);
   const [pulse, setPulse] = useState(false);
+  const pulseTimerRef = useRef(null);
+  const copyTimerRef = useRef(null);
 
   const handleClick = () => {
+    if (pulseTimerRef.current) clearTimeout(pulseTimerRef.current);
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+
     setPulse(true);
     setCopied(true);
     onClick();
     
-    setTimeout(() => {
+    pulseTimerRef.current = setTimeout(() => {
       setPulse(false);
     }, 400);
 
-    setTimeout(() => {
+    copyTimerRef.current = setTimeout(() => {
       setCopied(false);
     }, 2000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (pulseTimerRef.current) clearTimeout(pulseTimerRef.current);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   return (
     <button 
