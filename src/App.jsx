@@ -75,11 +75,11 @@ function App() {
         setDevices(data);
         setLoading(false);
 
-        // Deep link: check for ?sku=SKU parameter on page load
+        // Deep link: check for ?sku=SKU parameter on page load (case-insensitive match)
         const params = new URLSearchParams(window.location.search);
         const skuParam = params.get('sku');
         if (skuParam) {
-          const deviceMatch = data.find(d => d.SKU === skuParam);
+          const deviceMatch = data.find(d => d.SKU?.toLowerCase() === skuParam.toLowerCase());
           if (deviceMatch) {
             setSelectedDevice(deviceMatch);
           }
@@ -95,6 +95,8 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (loading) return; // Wait until catalog data is fully loaded to prevent wiping out params on cold boot
+    
     const params = new URLSearchParams(window.location.search);
     if (selectedDevice) {
       document.body.style.overflow = 'hidden';
@@ -109,7 +111,7 @@ function App() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [selectedDevice]);
+  }, [selectedDevice, loading]);
 
   return (
     <div className="app-container">
