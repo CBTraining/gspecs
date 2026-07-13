@@ -34,7 +34,7 @@
   --glow-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.06);
   --glow-primary: 0 0 15px 1px rgba(49, 132, 254, 0.3);
   
-  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-bg: rgba(255, 255, 255, 0.9);
 }
 
 .dark {
@@ -52,7 +52,7 @@
   --glow-shadow: 0 0 15px 1px rgba(255, 255, 255, 0.08);
   --glow-primary: 0 0 15px 1px rgba(49, 132, 254, 0.4);
   
-  --glass-bg: rgba(18, 18, 18, 0.8);
+  --glass-bg: rgba(18, 18, 18, 0.9);
 }
 
 * {
@@ -377,8 +377,8 @@ body {
   right: 0;
   z-index: 50;
   background-color: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -430,8 +430,8 @@ body {
   right: 0;
   z-index: 50;
   background-color: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--border-color);
   padding: 0.5rem 1rem;
   display: flex;
