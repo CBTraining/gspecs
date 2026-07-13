@@ -385,8 +385,8 @@ body {
   inset: 0;
   z-index: -1;
   background-color: var(--glass-bg);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 .app-header-content {
@@ -449,8 +449,8 @@ body {
   inset: 0;
   z-index: -1;
   background-color: var(--glass-bg);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 .bottom-nav .nav-item {
@@ -962,8 +962,8 @@ body {
   inset: 0;
   z-index: -1;
   background-color: var(--glass-bg);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border-radius: inherit;
 }
 
