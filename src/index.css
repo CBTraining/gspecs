@@ -706,8 +706,17 @@ body {
     gap: 0.5rem;
   }
 
-  .card-wrapper, .card {
+  .card-wrapper, .card-glow-mask, .card {
     min-width: 0 !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .card::after {
+    border-radius: 0.5rem !important;
+  }
+
+  .card-wrapper:hover .card::after {
+    border-radius: calc(0.5rem - 2px) !important;
   }
 
   .device-card-image-large {
@@ -736,7 +745,6 @@ body {
   }
   
   .card {
-    border-radius: 0.5rem;
     padding: 0.5rem !important;
   }
 
