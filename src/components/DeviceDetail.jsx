@@ -361,6 +361,28 @@ const DeviceDetail = ({ device, onBack }) => {
             { label: 'Battery Life', value: device['Battery Life'] }
           ]} />
         </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem', marginBottom: '1.5rem' }}>
+          <button 
+            className="btn-secondary"
+            onClick={onBack}
+            style={{
+              width: '100%',
+              maxWidth: '280px',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '2rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              fontSize: '0.9rem',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+          >
+            <ArrowLeft size={16} />
+            <span>Go Back</span>
+          </button>
+        </div>
       </div>
 
       {/* Toast rendering removed as actions have inline button feedback */}
