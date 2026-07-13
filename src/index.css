@@ -287,11 +287,11 @@ body {
 
 .btn-primary {
   background-color: var(--accent-color);
-  color: #000000;
+  color: #ffffff;
 }
 
 .dark .btn-primary {
-  color: #000000; /* White accent in dark mode needs dark text */
+  color: #ffffff;
 }
 
 .btn-primary:hover {
