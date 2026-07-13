@@ -34,7 +34,7 @@
   --glow-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.06);
   --glow-primary: 0 0 15px 1px rgba(49, 132, 254, 0.3);
   
-  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-bg: rgba(255, 255, 255, 0.9);
 }
 
 .dark {
@@ -52,7 +52,7 @@
   --glow-shadow: 0 0 15px 1px rgba(255, 255, 255, 0.08);
   --glow-primary: 0 0 15px 1px rgba(49, 132, 254, 0.4);
   
-  --glass-bg: rgba(18, 18, 18, 0.75);
+  --glass-bg: rgba(18, 18, 18, 0.9);
 }
 
 * {
@@ -71,7 +71,6 @@ body {
   background-color: var(--bg-color);
   color: var(--text-primary);
   min-height: 100vh;
-  overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
