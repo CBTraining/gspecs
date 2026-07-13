@@ -721,15 +721,15 @@ body {
 
 @keyframes actionButtonPulse {
   0% {
-    transform: scale(1);
+    scale: 1;
     box-shadow: 0 0 0 0 rgba(49, 132, 254, 0.7);
   }
   50% {
-    transform: scale(0.95);
+    scale: 0.95;
     box-shadow: 0 0 15px 5px rgba(0, 198, 255, 0.5);
   }
   100% {
-    transform: scale(1);
+    scale: 1;
     box-shadow: 0 0 0 0 rgba(49, 132, 254, 0);
   }
 }
