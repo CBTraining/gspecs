@@ -29,17 +29,24 @@ const GLOSSARY = {
   'touchscreen': 'Allows you to interact directly with the display using your fingers.',
 };
 
+const TooltipContext = React.createContext({
+  activeTooltipId: null,
+  setActiveTooltipId: () => {}
+});
+
 const SpecText = ({ text }) => {
-  const [show, setShow] = useState(false);
+  const { activeTooltipId, setActiveTooltipId } = React.useContext(TooltipContext);
+  const tooltipId = useRef(Math.random().toString(36).substr(2, 9)).current;
+  const show = activeTooltipId === tooltipId;
   const [xOffset, setXOffset] = useState("-50%");
   const spanRef = useRef(null);
 
   useEffect(() => {
     if (!show) return;
-    const handleDocumentClick = () => setShow(false);
+    const handleDocumentClick = () => setActiveTooltipId(null);
     document.addEventListener('click', handleDocumentClick);
     return () => document.removeEventListener('click', handleDocumentClick);
-  }, [show]);
+  }, [show, setActiveTooltipId]);
   
   if (!text) return null;
   
@@ -66,8 +73,10 @@ const SpecText = ({ text }) => {
         offsetPx = (windowWidth - 16) - (centerX + tooltipWidth / 2);
       }
       setXOffset(`calc(-50% + ${offsetPx}px)`);
+      setActiveTooltipId(tooltipId);
+    } else {
+      setActiveTooltipId(null);
     }
-    setShow(!show);
   };
 
   return (
@@ -169,6 +178,7 @@ const SpecGroup = ({ title, icon: Icon, items }) => {
 const DeviceDetail = ({ device, onBack }) => {
   if (!device) return null;
 
+  const [activeTooltipId, setActiveTooltipId] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
   const toastTimeoutRef = useRef(null);
 
@@ -203,8 +213,9 @@ const DeviceDetail = ({ device, onBack }) => {
   const barcodeSrc = device.SKU ? `/barcodes/${device.SKU.replace(/[^a-zA-Z0-9_-]/g, '')}.png` : null;
 
   return (
-    <motion.div 
-      className="detail-view"
+    <TooltipContext.Provider value={{ activeTooltipId, setActiveTooltipId }}>
+      <motion.div 
+        className="detail-view"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, scale: 0.98, filter: 'blur(10px)' }}
@@ -372,6 +383,7 @@ const DeviceDetail = ({ device, onBack }) => {
         )}
       </AnimatePresence>
     </motion.div>
+    </TooltipContext.Provider>
   );
 };
 
