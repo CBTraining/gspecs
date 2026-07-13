@@ -76,8 +76,8 @@ const CompareModal = ({ isOpen, onClose, devices }) => {
             </div>
 
             {/* Scrollable Comparison Content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <div style={{ flex: 1, overflow: 'auto', padding: '1.5rem' }}>
+              <table style={{ width: '100%', minWidth: '650px', borderCollapse: 'collapse', textAlign: 'left' }}>
                 {/* Column Headers (Device Names and Images) */}
                 <thead>
                   <tr>

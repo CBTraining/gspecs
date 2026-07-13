@@ -203,28 +203,11 @@ function App() {
       <AnimatePresence>
         {comparisonDevices.length > 0 && !selectedDevice && activeTab !== 'glossary' && (
           <motion.div
+            className="compare-bar"
             initial={{ y: 100, x: '-50%', opacity: 0 }}
             animate={{ y: 0, x: '-50%', opacity: 1 }}
             exit={{ y: 100, x: '-50%', opacity: 0 }}
-            style={{
-              position: 'fixed',
-              bottom: '5.5rem', // Floating just above bottom navigation
-              left: '50%',
-              zIndex: 140,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '1.5rem',
-              backgroundColor: 'var(--glass-bg)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '2rem',
-              padding: '0.6rem 1.2rem',
-              boxShadow: 'var(--shadow-lg)',
-              width: '90%',
-              maxWidth: '600px'
-            }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
             {/* Thumbnails list */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>

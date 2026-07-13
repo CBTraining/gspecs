@@ -159,21 +159,7 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
 
       {/* Quiz Prompt Banner */}
       {onOpenQuiz && (
-        <div 
-          className="specs-card" 
-          style={{ 
-            padding: '1.25rem', 
-            marginBottom: '1.5rem', 
-            borderRadius: '1.25rem', 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            gap: '1.5rem',
-            background: 'linear-gradient(135deg, var(--surface-color) 0%, var(--surface-hover) 100%)',
-            border: '1px solid var(--border-color)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-        >
+        <div className="quiz-banner">
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <span style={{ fontSize: '1.75rem' }}>✨</span>
             <div>
