@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Moon, Sun, Laptop, ArrowLeft, BookOpen, Trash2, GitCompare, X, Smartphone } from 'lucide-react';
+import { Moon, Sun, Laptop, ArrowLeft, BookOpen, Trash2, GitCompare, X, Smartphone, Scan, TrendingUp } from 'lucide-react';
 import { fetchDeviceData } from './utils/fetchData';
 import DeviceList from './components/DeviceList';
 import DeviceDetail from './components/DeviceDetail';
 import GlossaryView from './components/GlossaryView';
 import CompareModal from './components/CompareModal';
 import QuizModal from './components/QuizModal';
+import StepUpChart from './components/StepUpChart';
 
 function App() {
   const [devices, setDevices] = useState([]);
@@ -156,6 +157,16 @@ function App() {
               <span>Gragglebook</span>
             </div>
             <div 
+              className={`nav-item ${activeTab === 'stepup' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('stepup');
+                setSelectedDevice(null);
+              }}
+            >
+              <TrendingUp size={20} />
+              <span>Step Up</span>
+            </div>
+            <div 
               className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`}
               onClick={() => {
                 setActiveTab('glossary');
@@ -167,9 +178,19 @@ function App() {
             </div>
           </nav>
 
-          <button className="btn-icon" onClick={toggleTheme} aria-label="Toggle Theme">
-            {theme === 'light' ? <Moon size={24} /> : <Sun size={24} />}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button 
+              className="btn-icon" 
+              onClick={() => alert('Barcode Scanner not developed yet.')} 
+              aria-label="Scan Barcode"
+              style={{ marginRight: '0.25rem' }}
+            >
+              <Scan size={24} />
+            </button>
+            <button className="btn-icon" onClick={toggleTheme} aria-label="Toggle Theme">
+              {theme === 'light' ? <Moon size={24} /> : <Sun size={24} />}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -195,6 +216,8 @@ function App() {
             </div>
           ) : activeTab === 'glossary' ? (
             <GlossaryView />
+          ) : activeTab === 'stepup' ? (
+            <StepUpChart devices={devices} onSelectDevice={setSelectedDevice} />
           ) : (
             <DeviceList 
               devices={devices} 
@@ -331,6 +354,16 @@ function App() {
         >
           <Laptop size={24} />
           <span>Gragglebook</span>
+        </div>
+        <div 
+          className={`nav-item ${activeTab === 'stepup' ? 'active' : ''}`} 
+          onClick={() => {
+            setActiveTab('stepup');
+            setSelectedDevice(null);
+          }}
+        >
+          <TrendingUp size={24} />
+          <span>Step Up</span>
         </div>
         <div 
           className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`} 
