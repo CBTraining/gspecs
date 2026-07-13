@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, ArrowRight, RefreshCw, Check, Laptop, Smartphone } from 'lucide-react';
+import { X, Sparkles, ArrowRight, ArrowLeft, RefreshCw, Check, Laptop, Smartphone, Battery, Monitor } from 'lucide-react';
 import { getPersonaColor } from '../utils/persona';
 
 const parsePrice = (priceStr) => {
@@ -19,22 +19,41 @@ const parseBattery = (batteryStr) => {
   return Number(batteryStr.replace(/[^0-9.]/g, ''));
 };
 
-const QuizModal = ({ isOpen, onClose, devices, onSelectDevice }) => {
+const stepVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? 100 : -100,
+    opacity: 0
+  }),
+  center: {
+    x: 0,
+    opacity: 1
+  },
+  exit: (direction) => ({
+    x: direction > 0 ? -100 : 100,
+    opacity: 0
+  })
+};
+
+const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
   const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
   const [answers, setAnswers] = useState({
     persona: '',
     budget: Infinity,
-    priority: ''
+    portabilityVsScreen: '', // 'portability' or 'large-screen'
+    touchVsBattery: '' // 'touch' or 'battery'
   });
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setStep(1);
+      setDirection(1);
       setAnswers({
         persona: '',
         budget: Infinity,
-        priority: ''
+        portabilityVsScreen: '',
+        touchVsBattery: ''
       });
     } else {
       document.body.style.overflow = '';
@@ -45,17 +64,30 @@ const QuizModal = ({ isOpen, onClose, devices, onSelectDevice }) => {
   }, [isOpen]);
 
   const handleReset = () => {
+    setDirection(-1);
     setStep(1);
     setAnswers({
       persona: '',
       budget: Infinity,
-      priority: ''
+      portabilityVsScreen: '',
+      touchVsBattery: ''
     });
+  };
+
+  const goForward = (nextAnswers) => {
+    setAnswers(nextAnswers);
+    setDirection(1);
+    setStep(s => s + 1);
+  };
+
+  const goBackward = () => {
+    setDirection(-1);
+    setStep(s => s - 1);
   };
 
   // Calculate top recommendations based on answers
   const recommendations = useMemo(() => {
-    if (step !== 4) return [];
+    if (step !== 5) return [];
 
     const scored = devices.map(device => {
       let score = 0;
@@ -74,18 +106,21 @@ const QuizModal = ({ isOpen, onClose, devices, onSelectDevice }) => {
         score += 15;
       }
 
-      // 3. Priority match (30% weight)
-      if (answers.priority === 'portability') {
+      // 3. Portability vs Screen Size match (15% weight)
+      if (answers.portabilityVsScreen === 'portability') {
         const weight = parseWeight(device.Weight);
-        if (weight > 0 && weight <= 3.2) score += 30;
-      } else if (answers.priority === 'touch') {
-        if (device['Touchscreen?'] === 'Yes') score += 30;
-      } else if (answers.priority === 'battery') {
-        const hours = parseBattery(device['Battery Life']);
-        if (hours >= 11) score += 30;
-      } else if (answers.priority === 'large-screen') {
+        if (weight > 0 && weight <= 3.2) score += 15;
+      } else if (answers.portabilityVsScreen === 'large-screen') {
         const size = parseFloat(device['Screen Size']);
-        if (size >= 14) score += 30;
+        if (size >= 14) score += 15;
+      }
+
+      // 4. Touchscreen vs Battery match (15% weight)
+      if (answers.touchVsBattery === 'touch') {
+        if (device['Touchscreen?'] === 'Yes') score += 15;
+      } else if (answers.touchVsBattery === 'battery') {
+        const hours = parseBattery(device['Battery Life']);
+        if (hours >= 11) score += 15;
       }
 
       return {
@@ -127,23 +162,33 @@ const QuizModal = ({ isOpen, onClose, devices, onSelectDevice }) => {
             }}
           >
             {/* Header */}
-            <div className="filter-header">
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="filter-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {step > 1 && step < 5 && (
+                  <button 
+                    className="btn-icon" 
+                    onClick={goBackward}
+                    style={{ padding: '0.25rem', marginRight: '0.25rem' }}
+                    aria-label="Previous step"
+                  >
+                    <ArrowLeft size={20} />
+                  </button>
+                )}
                 <Sparkles size={22} style={{ color: 'var(--accent-color)' }} />
                 <span>Find Your Gragglebook</span>
-              </h3>
-              <button className="btn-icon" onClick={onClose}>
+              </div>
+              <button className="btn-icon" onClick={onClose} aria-label="Close modal">
                 <X size={24} />
               </button>
             </div>
 
             {/* Quiz Body */}
-            <div style={{ flex: 1, padding: '2rem 1.5rem', overflowY: 'auto' }}>
+            <div style={{ flex: 1, padding: '2rem 1.5rem', overflowY: 'auto', position: 'relative' }}>
               
               {/* Step Indicators */}
-              {step < 4 && (
+              {step < 5 && (
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
-                  {[1, 2, 3].map(s => (
+                  {[1, 2, 3, 4].map(s => (
                     <div 
                       key={s} 
                       style={{
@@ -158,238 +203,355 @@ const QuizModal = ({ isOpen, onClose, devices, onSelectDevice }) => {
                 </div>
               )}
 
-              {/* STEP 1: Persona Selection */}
-              {step === 1 && (
-                <div>
-                  <h4 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem', textAlign: 'center' }}>
-                    What is your primary use case?
-                  </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {[
-                      { key: 'Everyday User', label: 'Everyday Browsing & Tasks', desc: 'Social media, email, video streaming, and casual web use.' },
-                      { key: 'Student', label: 'School & Study', desc: 'Writing papers, taking notes, reading textbooks, and research.' },
-                      { key: 'Content Creator', label: 'Content Creation & Design', desc: 'Photo editing, video production, graphic design, and rendering.' },
-                      { key: 'Professional', label: 'Office & Professional Work', desc: 'Heavy multitasking, sheets, video meetings, and business apps.' },
-                      { key: 'Gamer / Power User', label: 'Gaming & Performance', desc: 'High performance gaming, virtualization, compilation, and power tasks.' }
-                    ].map(option => (
-                      <button
-                        key={option.key}
-                        onClick={() => {
-                          setAnswers(prev => ({ ...prev, persona: option.key }));
-                          setStep(2);
-                        }}
-                        style={{
-                          textAlign: 'left',
-                          padding: '1.25rem',
-                          borderRadius: '1rem',
-                          border: '1px solid var(--border-color)',
-                          backgroundColor: 'var(--surface-color)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.25rem',
-                          outline: 'none',
-                          transition: 'transform 0.2s ease, border-color 0.2s ease'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                      >
-                        <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{option.label}</span>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{option.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 2: Budget */}
-              {step === 2 && (
-                <div>
-                  <h4 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem', textAlign: 'center' }}>
-                    What is your budget limit?
-                  </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {[
-                      { value: 400, label: 'Entry Level (Under $400)', desc: 'Affordable, essential features for basic needs.' },
-                      { value: 700, label: 'Mid-Range (Under $700)', desc: 'Great value, balanced performance and portability.' },
-                      { value: 1000, label: 'Premium (Under $1000)', desc: 'Higher build quality, faster chips, and beautiful screens.' },
-                      { value: Infinity, label: 'Unlimited / Premium Flagship', desc: 'No budget bounds; show me the absolute best tech.' }
-                    ].map(option => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setAnswers(prev => ({ ...prev, budget: option.value }));
-                          setStep(3);
-                        }}
-                        style={{
-                          textAlign: 'left',
-                          padding: '1.25rem',
-                          borderRadius: '1rem',
-                          border: '1px solid var(--border-color)',
-                          backgroundColor: 'var(--surface-color)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.25rem',
-                          outline: 'none',
-                          transition: 'transform 0.2s ease, border-color 0.2s ease'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                      >
-                        <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{option.label}</span>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{option.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 3: Priority Features */}
-              {step === 3 && (
-                <div>
-                  <h4 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem', textAlign: 'center' }}>
-                    Choose your top feature priority:
-                  </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {[
-                      { key: 'portability', label: 'Ultra Portable & Lightweight', desc: 'Laptops under 3.2 lbs, ideal for carrying around.' },
-                      { key: 'touch', label: 'Touchscreen / Tablet mode', desc: 'Full touch navigation and digital pen compatibility.' },
-                      { key: 'battery', label: 'Maximum Battery Life', desc: 'Devices that last 11+ hours on a single charge.' },
-                      { key: 'large-screen', label: 'Large Screen Size', desc: '14" or larger screens for comfortable multitasking.' }
-                    ].map(option => (
-                      <button
-                        key={option.key}
-                        onClick={() => {
-                          setAnswers(prev => ({ ...prev, priority: option.key }));
-                          setStep(4);
-                        }}
-                        style={{
-                          textAlign: 'left',
-                          padding: '1.25rem',
-                          borderRadius: '1rem',
-                          border: '1px solid var(--border-color)',
-                          backgroundColor: 'var(--surface-color)',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.25rem',
-                          outline: 'none',
-                          transition: 'transform 0.2s ease, border-color 0.2s ease'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                      >
-                        <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{option.label}</span>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{option.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 4: Results screen */}
-              {step === 4 && (
-                <div>
-                  <h4 style={{ fontSize: '1.3rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center' }}>
-                    Recommended Gragglebooks
-                  </h4>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem', textAlign: 'center' }}>
-                    Based on your requirements, here are the best matches:
-                  </p>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {recommendations.map(({ device, matchPercentage }) => {
-                      const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
-                      return (
-                        <div 
-                          key={device.SKU}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1rem',
-                            backgroundColor: 'var(--surface-hover)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '1.25rem',
-                            padding: '1rem'
-                          }}
-                        >
-                          <div style={{ 
-                            width: '70px', 
-                            height: '70px', 
-                            backgroundColor: '#ffffff',
-                            borderRadius: '0.5rem',
-                            padding: '0.25rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid var(--border-color)',
-                            overflow: 'hidden'
-                          }}>
-                            {device['Device Image'] ? (
-                              <img 
-                                src={device['Device Image']} 
-                                alt="" 
-                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                              />
-                            ) : (
-                              isLaptop ? <Laptop size={24} /> : <Smartphone size={24} />
-                            )}
-                          </div>
-
-                          <div style={{ flex: 1 }}>
-                            <h5 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
-                              {device['Device Name']}
-                            </h5>
-                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                              <span style={{ fontSize: '0.8rem', color: 'var(--accent-color)', fontWeight: '700' }}>
-                                {matchPercentage}% Match
-                              </span>
-                              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>|</span>
-                              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                {device.MSRP}
-                              </span>
-                              <span style={{ 
-                                fontSize: '0.75rem', 
-                                color: '#ffffff', 
-                                backgroundColor: getPersonaColor(device.Persona), 
-                                borderRadius: '0.25rem',
-                                padding: '0.1rem 0.4rem',
-                                fontWeight: '600'
-                              }}>
-                                {device.Persona}
-                              </span>
-                            </div>
-                          </div>
-
-                          <button 
-                            className="btn-primary" 
-                            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.25rem', borderRadius: '1rem' }}
-                            onClick={() => {
-                              onSelectDevice(device);
-                              onClose();
+              {/* Animating Step Wrapper */}
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={step}
+                  custom={direction}
+                  variants={stepVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                >
+                  {/* STEP 1: Persona Selection */}
+                  {step === 1 && (
+                    <div>
+                      <h4 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '1.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
+                        What is your primary use case?
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {[
+                          { key: 'Everyday User', label: 'Everyday Browsing & Tasks', desc: 'Social media, email, video streaming, and casual web use.' },
+                          { key: 'Student', label: 'School & Study', desc: 'Writing papers, taking notes, reading textbooks, and research.' },
+                          { key: 'Content Creator', label: 'Content Creation & Design', desc: 'Photo editing, video production, graphic design, and rendering.' },
+                          { key: 'Professional', label: 'Office & Professional Work', desc: 'Heavy multitasking, sheets, video meetings, and business apps.' },
+                          { key: 'Gamer / Power User', label: 'Gaming & Performance', desc: 'High performance gaming, virtualization, compilation, and power tasks.' }
+                        ].map(option => (
+                          <button
+                            key={option.key}
+                            onClick={() => goForward({ ...answers, persona: option.key })}
+                            style={{
+                              textAlign: 'left',
+                              padding: '1.25rem',
+                              borderRadius: '1rem',
+                              border: '1px solid var(--border-color)',
+                              backgroundColor: 'var(--surface-color)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.25rem',
+                              outline: 'none',
+                              transition: 'transform 0.2s ease, border-color 0.2s ease'
                             }}
+                            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
+                            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
                           >
-                            <span>View</span>
-                            <ArrowRight size={14} />
+                            <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{option.label}</span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{option.desc}</span>
                           </button>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem' }}>
-                    <button 
-                      className="btn-secondary" 
-                      onClick={handleReset}
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '1.5rem', padding: '0.6rem 1.2rem' }}
-                    >
-                      <RefreshCw size={16} />
-                      <span>Retake Quiz</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+                  {/* STEP 2: Budget */}
+                  {step === 2 && (
+                    <div>
+                      <h4 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '1.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
+                        What is your budget limit?
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {[
+                          { value: 400, label: 'Entry Level (Under $400)', desc: 'Affordable, essential features for basic needs.' },
+                          { value: 700, label: 'Mid-Range (Under $700)', desc: 'Great value, balanced performance and portability.' },
+                          { value: 1000, label: 'Premium (Under $1000)', desc: 'Higher build quality, faster chips, and beautiful screens.' },
+                          { value: Infinity, label: 'Unlimited / Premium Flagship', desc: 'No budget bounds; show me the absolute best tech.' }
+                        ].map(option => (
+                          <button
+                            key={option.value}
+                            onClick={() => goForward({ ...answers, budget: option.value })}
+                            style={{
+                              textAlign: 'left',
+                              padding: '1.25rem',
+                              borderRadius: '1rem',
+                              border: '1px solid var(--border-color)',
+                              backgroundColor: 'var(--surface-color)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.25rem',
+                              outline: 'none',
+                              transition: 'transform 0.2s ease, border-color 0.2s ease'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
+                            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                          >
+                            <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{option.label}</span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{option.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 3: Portability vs Screen size (Qualifying) */}
+                  {step === 3 && (
+                    <div>
+                      <h4 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
+                        Portability vs Screen Size
+                      </h4>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '1.5rem' }}>
+                        Which of these aspects is more important for your daily work?
+                      </p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                        <button
+                          onClick={() => goForward({ ...answers, portabilityVsScreen: 'portability' })}
+                          style={{
+                            textAlign: 'center',
+                            padding: '2rem 1.5rem',
+                            borderRadius: '1.25rem',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--surface-color)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                        >
+                          <Laptop size={32} style={{ color: 'var(--accent-color)' }} />
+                          <div>
+                            <span style={{ fontWeight: '800', color: 'var(--text-primary)', display: 'block', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
+                              Ultra-Light & Portable
+                            </span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                              I am always on the go. I need a lightweight device (under 3.2 lbs) that is easy to carry all day.
+                            </span>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => goForward({ ...answers, portabilityVsScreen: 'large-screen' })}
+                          style={{
+                            textAlign: 'center',
+                            padding: '2rem 1.5rem',
+                            borderRadius: '1.25rem',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--surface-color)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                        >
+                          <Monitor size={32} style={{ color: 'var(--accent-color)' }} />
+                          <div>
+                            <span style={{ fontWeight: '800', color: 'var(--text-primary)', display: 'block', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
+                              Larger Display Space
+                            </span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                              I want maximum screen real estate (14" or larger) to multitask comfortably with multiple windows open.
+                            </span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 4: Touchscreen vs Battery Life (Qualifying) */}
+                  {step === 4 && (
+                    <div>
+                      <h4 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
+                        Touchscreen vs Battery Life
+                      </h4>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '1.5rem' }}>
+                        Choose your priority feature:
+                      </p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                        <button
+                          onClick={() => goForward({ ...answers, touchVsBattery: 'touch' })}
+                          style={{
+                            textAlign: 'center',
+                            padding: '2rem 1.5rem',
+                            borderRadius: '1.25rem',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--surface-color)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                        >
+                          <Smartphone size={32} style={{ color: 'var(--accent-color)' }} />
+                          <div>
+                            <span style={{ fontWeight: '800', color: 'var(--text-primary)', display: 'block', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
+                              Touchscreen & Pen Support
+                            </span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                              I want a touch-sensitive screen or tablet convertible mode for taking notes, sketching, and drawing.
+                            </span>
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => goForward({ ...answers, touchVsBattery: 'battery' })}
+                          style={{
+                            textAlign: 'center',
+                            padding: '2rem 1.5rem',
+                            borderRadius: '1.25rem',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--surface-color)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            outline: 'none',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                        >
+                          <Battery size={32} style={{ color: 'var(--accent-color)' }} />
+                          <div>
+                            <span style={{ fontWeight: '800', color: 'var(--text-primary)', display: 'block', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
+                              Long-Lasting Battery
+                            </span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                              I need all-day battery life (11+ hours) so I don't have to carry a charger or hunt for outlets.
+                            </span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 5: Results screen */}
+                  {step === 5 && (
+                    <div>
+                      <h4 style={{ fontSize: '1.3rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
+                        Recommended Gragglebooks
+                      </h4>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem', textAlign: 'center' }}>
+                        Based on your requirements, here are the best matches:
+                      </p>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {recommendations.map(({ device, matchPercentage }) => {
+                          const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
+                          return (
+                            <div 
+                              key={device.SKU}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem',
+                                backgroundColor: 'var(--surface-hover)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '1.25rem',
+                                padding: '1rem'
+                              }}
+                            >
+                              <div style={{ 
+                                width: '70px', 
+                                height: '70px', 
+                                backgroundColor: '#ffffff',
+                                borderRadius: '0.5rem',
+                                padding: '0.25rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '1px solid var(--border-color)',
+                                overflow: 'hidden',
+                                flexShrink: 0
+                              }}>
+                                {device['Device Image'] ? (
+                                  <img 
+                                    src={device['Device Image']} 
+                                    alt="" 
+                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                  />
+                                ) : (
+                                  isLaptop ? <Laptop size={24} style={{ color: '#000000' }} /> : <Smartphone size={24} style={{ color: '#000000' }} />
+                                )}
+                              </div>
+
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <h5 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {device['Device Name']}
+                                </h5>
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: '0.8rem', color: 'var(--accent-color)', fontWeight: '700' }}>
+                                    {matchPercentage}% Match
+                                  </span>
+                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>|</span>
+                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                    {device.MSRP}
+                                  </span>
+                                  <span style={{ 
+                                    fontSize: '0.75rem', 
+                                    color: '#ffffff', 
+                                    backgroundColor: getPersonaColor(device.Persona), 
+                                    borderRadius: '0.25rem',
+                                    padding: '0.1rem 0.4rem',
+                                    fontWeight: '600'
+                                  }}>
+                                    {device.Persona}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <button 
+                                className="btn-primary" 
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.25rem', borderRadius: '1rem', flexShrink: 0 }}
+                                onClick={() => {
+                                  onSelectDevice(device);
+                                  onClose();
+                                }}
+                              >
+                                <span>View</span>
+                                <ArrowRight size={14} />
+                              </button>
+                            </div>
+                          );
+                        })}
+
+                        {recommendations.length === 0 && (
+                          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                            <p>No perfect matches found. Try widening your budget or changing priorities.</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem' }}>
+                        <button 
+                          className="btn-secondary" 
+                          onClick={handleReset}
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '1.5rem', padding: '0.6rem 1.2rem' }}
+                        >
+                          <RefreshCw size={16} />
+                          <span>Retake Quiz</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
 
             </div>
           </motion.div>
