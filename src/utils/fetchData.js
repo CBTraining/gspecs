@@ -10,12 +10,12 @@ const convertDriveLink = (url, deviceName) => {
   if (match && match[1] && deviceName) {
     const safeTitle = deviceName.replace(/[^a-zA-Z0-9 -]/g, '').trim();
     // Return the path to the locally cached image
-    return `/images/${safeTitle}_image.jpg`;
+    return `${import.meta.env.BASE_URL}images/${safeTitle}_image.jpg`;
   }
   
   // If it's already just a filename (e.g. img1.jpg), use it from local cache
   if (!url.startsWith('http')) {
-    return `/images/${url}`;
+    return `${import.meta.env.BASE_URL}images/${url}`;
   }
   
   return url;
