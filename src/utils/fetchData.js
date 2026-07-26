@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
 
-const SHEET_URL = '/devices.csv';
+const SHEET_URL = import.meta.env.BASE_URL + 'devices.csv';
 
 const convertDriveLink = (url, deviceName) => {
   if (!url) return url;

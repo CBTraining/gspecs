@@ -138,7 +138,7 @@ function App() {
             
             <div className="app-title">
               <img 
-                src={theme === 'dark' ? '/gspecs_light.svg' : '/gspecs_dark.svg'} 
+                src={theme === 'dark' ? `${import.meta.env.BASE_URL}gspecs_light.svg` : `${import.meta.env.BASE_URL}gspecs_dark.svg`} 
                 alt="G-Specs" 
                 style={{ height: '28px' }} 
               />
