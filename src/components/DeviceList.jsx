@@ -37,6 +37,31 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
     localStorage.setItem('gspecs_activeFilters', JSON.stringify(activeFilters));
   }, [activeFilters]);
 
+  // Determine current active Device Type toggle ('All', 'Gragglebook', 'Chromerbook')
+  const currentDeviceType = useMemo(() => {
+    const devFilter = activeFilters.Device || [];
+    if (devFilter.length === 1) {
+      const val = devFilter[0].toLowerCase();
+      if (val.includes('graggle')) return 'Gragglebook';
+      if (val.includes('chromer')) return 'Chromerbook';
+    }
+    return 'All';
+  }, [activeFilters]);
+
+  const handleSelectDeviceType = (type) => {
+    setActiveFilters(prev => {
+      const next = { ...prev };
+      if (type === 'All') {
+        delete next.Device;
+      } else if (type === 'Gragglebook') {
+        next.Device = ['Gragglebook'];
+      } else if (type === 'Chromerbook') {
+        next.Device = ['Chromerbook'];
+      }
+      return next;
+    });
+  };
+
   // Filter devices based on activeFilters and searchQuery
   const filteredDevices = useMemo(() => {
     return devices.filter(device => {
@@ -63,7 +88,18 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
           }
           continue;
         }
-        if (selectedValues.length === 0) continue;
+        if (!selectedValues || selectedValues.length === 0) continue;
+
+        if (key === 'Device') {
+          const deviceVal = (device.Device || '').toLowerCase().replace(/s$/, '');
+          const matches = selectedValues.some(val => {
+            const v = val.toLowerCase().replace(/s$/, '');
+            return deviceVal.includes(v) || v.includes(deviceVal);
+          });
+          if (!matches) return false;
+          continue;
+        }
+
         if (!selectedValues.includes(device[key])) {
           return false;
         }
@@ -93,8 +129,47 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
 
   return (
     <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', marginTop: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', marginTop: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: '700' }}>Devices ({filteredDevices.length})</h2>
+        
+        {/* Device Type Toggle Pills */}
+        <div 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+            backgroundColor: 'var(--surface-color)',
+            border: '1px solid var(--border-color)',
+            padding: '3px',
+            borderRadius: '2rem',
+            boxShadow: 'var(--shadow-sm)'
+          }}
+        >
+          {['All', 'Gragglebook', 'Chromerbook'].map((type) => {
+            const isActive = currentDeviceType === type;
+            return (
+              <button
+                key={type}
+                onClick={() => handleSelectDeviceType(type)}
+                style={{
+                  border: 'none',
+                  backgroundColor: isActive ? 'var(--accent-color)' : 'transparent',
+                  color: isActive ? '#ffffff' : 'var(--text-secondary)',
+                  padding: '0.4rem 1rem',
+                  borderRadius: '1.5rem',
+                  fontSize: '0.85rem',
+                  fontWeight: isActive ? '700' : '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  outline: 'none'
+                }}
+              >
+                {type}
+              </button>
+            );
+          })}
+        </div>
+
         <button 
           className="btn-secondary" 
           onClick={() => setIsFilterOpen(true)}

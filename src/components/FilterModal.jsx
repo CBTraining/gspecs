@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 const FILTER_CATEGORIES = [
+  { key: 'Device', label: 'Device Type' },
   { key: 'Persona', label: 'Persona' },
   { key: 'OEM (brand)', label: 'Brand' },
   { key: 'Formfactor', label: 'Form Factor' },
@@ -41,7 +42,17 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
 
   // Extract unique values for each category
   const filterOptions = FILTER_CATEGORIES.reduce((acc, cat) => {
-    const uniqueVals = [...new Set(devices.map(d => d[cat.key]).filter(v => v && v.toLowerCase() !== 'none'))];
+    let uniqueVals = [...new Set(devices.map(d => d[cat.key]).filter(v => v && v.toLowerCase() !== 'none'))];
+    if (cat.key === 'Device') {
+      const normalizedSet = new Set();
+      uniqueVals.forEach(v => {
+        const norm = v.trim().replace(/s$/, '');
+        if (norm.toLowerCase() === 'chromerbook') normalizedSet.add('Chromerbook');
+        else if (norm.toLowerCase() === 'gragglebook') normalizedSet.add('Gragglebook');
+        else normalizedSet.add(v.trim());
+      });
+      uniqueVals = [...normalizedSet];
+    }
     acc[cat.key] = uniqueVals.sort();
     return acc;
   }, {});
@@ -49,6 +60,17 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
   const toggleFilter = (categoryKey, value) => {
     setLocalFilters(prev => {
       const current = prev[categoryKey] || [];
+      if (categoryKey === 'Device') {
+        const targetNorm = value.toLowerCase().replace(/s$/, '');
+        const exists = current.some(s => s.toLowerCase().replace(/s$/, '') === targetNorm);
+        let updated;
+        if (exists) {
+          updated = current.filter(s => s.toLowerCase().replace(/s$/, '') !== targetNorm);
+        } else {
+          updated = [...current, value];
+        }
+        return { ...prev, [categoryKey]: updated };
+      }
       if (current.includes(value)) {
         return { ...prev, [categoryKey]: current.filter(v => v !== value) };
       } else {
@@ -151,7 +173,12 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
                     <h4>{cat.label}</h4>
                     <div className="filter-pills-container">
                       {filterOptions[cat.key].map(val => {
-                        const isActive = localFilters[cat.key]?.includes(val);
+                        const selected = localFilters[cat.key] || [];
+                        let isActive = selected.includes(val);
+                        if (cat.key === 'Device') {
+                          const targetNorm = val.toLowerCase().replace(/s$/, '');
+                          isActive = selected.some(s => s.toLowerCase().replace(/s$/, '') === targetNorm);
+                        }
                         return (
                           <button
                             key={val}
