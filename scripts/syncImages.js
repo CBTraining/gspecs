@@ -20,10 +20,23 @@ const extractDriveId = (url) => {
   return match ? match[1] : null;
 };
 
+const fetchWithTimeout = async (url, timeoutMs = 5000) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    return res;
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err;
+  }
+};
+
 const downloadImage = async (url, filepath) => {
   try {
     console.log(`Downloading ${url}...`);
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url, 5000);
     if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
     
     const arrayBuffer = await response.arrayBuffer();
@@ -58,13 +71,24 @@ const generateBarcode = (sku, filepath) => {
 
 const syncImages = async () => {
   console.log('Fetching Google Sheet...');
-  const response = await fetch(SHEET_URL);
-  const csvText = await response.text();
-
-  // Save the CSV locally so the frontend doesn't need the Google Sheet URL
   const publicDir = path.join(__dirname, '../public');
-  fs.writeFileSync(path.join(publicDir, 'devices.csv'), csvText);
-  console.log('Saved CSV to public/devices.csv');
+  const csvPath = path.join(publicDir, 'devices.csv');
+
+  let csvText;
+  try {
+    const response = await fetchWithTimeout(SHEET_URL, 5000);
+    csvText = await response.text();
+    fs.writeFileSync(csvPath, csvText);
+    console.log('Saved CSV to public/devices.csv');
+  } catch (err) {
+    console.warn('Could not fetch remote Google Sheet (using local devices.csv if present):', err.message);
+    if (fs.existsSync(csvPath)) {
+      csvText = fs.readFileSync(csvPath, 'utf8');
+    } else {
+      console.error('No local devices.csv available!');
+      return;
+    }
+  }
 
   Papa.parse(csvText, {
     header: true,
