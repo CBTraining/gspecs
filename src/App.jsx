@@ -154,7 +154,7 @@ function App() {
               }}
             >
               <Laptop size={20} />
-              <span>Gragglebook</span>
+              <span>Devices</span>
             </div>
             <div 
               className={`nav-item ${activeTab === 'stepup' ? 'active' : ''}`}
@@ -353,7 +353,7 @@ function App() {
           }}
         >
           <Laptop size={24} />
-          <span>Gragglebook</span>
+          <span>Devices</span>
         </div>
         <div 
           className={`nav-item ${activeTab === 'stepup' ? 'active' : ''}`} 
