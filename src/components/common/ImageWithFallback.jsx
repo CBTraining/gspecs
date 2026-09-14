@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Laptop, Smartphone } from 'lucide-react';
 
 export const ImageWithFallback = ({ 
@@ -11,6 +11,10 @@ export const ImageWithFallback = ({
   loading = 'lazy'
 }) => {
   const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setError(false);
+  }, [src]);
 
   if (!src || error) {
     return isLaptop ? (

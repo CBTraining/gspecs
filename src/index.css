@@ -675,11 +675,13 @@ body {
   align-items: center;
   justify-content: center;
   margin-bottom: 2rem;
+  min-height: 280px;
 }
 
 .detail-large-image {
   width: 100%;
   max-width: 400px;
+  max-height: 280px;
   height: auto;
   object-fit: contain;
   margin-bottom: 2rem;

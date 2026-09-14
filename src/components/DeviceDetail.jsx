@@ -41,10 +41,10 @@ const DeviceDetail = ({ device, onBack }) => {
     <TooltipContext.Provider value={{ activeTooltipId, setActiveTooltipId }}>
       <motion.div 
         className="detail-view"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, filter: 'blur(10px)' }}
-        transition={{ duration: 0.15, ease: "easeInOut" }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
         onClick={(e) => {
           if (e.target.classList.contains('detail-view') || e.target.classList.contains('container')) {
             onBack();
@@ -52,10 +52,10 @@ const DeviceDetail = ({ device, onBack }) => {
         }}
       >
         <div className="container content-area">
-          <motion.div className="detail-header-card" layoutId={`card-${device.SKU}`}>
+          <div className="detail-header-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div>
-                <motion.h2 className="detail-header-title">{device['Device Name']}</motion.h2>
+                <h2 className="detail-header-title">{device['Device Name']}</h2>
                 <div className="detail-header-subtitle">{device.Formfactor || device['OEM (brand)']}</div>
               </div>
               {device.Persona && (
@@ -64,20 +64,28 @@ const DeviceDetail = ({ device, onBack }) => {
                 </span>
               )}
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div className="detail-image-card" layoutId={`image-${device.SKU}`}>
+          <div className="detail-image-card">
             <ImageWithFallback 
               src={device['Device Image']} 
               alt={device['Device Name']} 
               isLaptop={isLaptop} 
               size={120}
               className="detail-large-image"
+              loading="eager"
+              style={{ height: 'auto', maxHeight: '280px' }}
             />
             {barcodeSrc && (
-              <img src={barcodeSrc} alt="Barcode" className="detail-barcode" />
+              <img 
+                src={barcodeSrc} 
+                alt="Barcode" 
+                className="detail-barcode" 
+                loading="lazy" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+              />
             )}
-          </motion.div>
+          </div>
 
           <div className="action-buttons-row">
             <ActionButton 

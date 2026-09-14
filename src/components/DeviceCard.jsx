@@ -1,4 +1,4 @@
-﻿import React, { memo } from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import ImageWithFallback from './common/ImageWithFallback';
 import { getPersonaColor } from '../utils/persona';
@@ -17,14 +17,12 @@ export const DeviceCard = memo(({
       onClick={() => onSelectDevice(device)}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      layoutId={`wrapper-${device.SKU}`}
     >
       <div className="card-glow-mask">
         <div className="card-glow-spinner"></div>
       </div>
       <div 
-        className="card" 
-        layoutId={`card-${device.SKU}`}
+        className="card"
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const x = e.clientX - rect.left;
@@ -72,19 +70,19 @@ export const DeviceCard = memo(({
         )}
 
         <div className="device-card-content-vertical">
-          <motion.div className="device-card-image-large" layoutId={`image-${device.SKU}`}>
+          <div className="device-card-image-large">
             <ImageWithFallback 
               src={device['Device Image']} 
               alt={device['Device Name']} 
               isLaptop={isLaptop} 
               size={32} 
             />
-          </motion.div>
+          </div>
           <div className="device-card-info-vertical">
             <div className="device-brand-text">{device.Formfactor || brand}</div>
-            <motion.h3 className="device-title-text">
+            <h3 className="device-title-text">
               {device['Device Name']}
-            </motion.h3>
+            </h3>
             <div className="device-sku-text">SKU: {device.SKU || 'N/A'}</div>
             {device.Persona && (
               <span className="persona-tag" style={{ backgroundColor: getPersonaColor(device.Persona) }}>
