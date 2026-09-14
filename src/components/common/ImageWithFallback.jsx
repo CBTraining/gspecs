@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Laptop, Smartphone } from 'lucide-react';
 
 export const ImageWithFallback = ({ 
@@ -7,7 +7,8 @@ export const ImageWithFallback = ({
   isLaptop = true, 
   size = 32, 
   className = '', 
-  style = {} 
+  style = {},
+  loading = 'lazy'
 }) => {
   const [error, setError] = useState(false);
 
@@ -23,6 +24,8 @@ export const ImageWithFallback = ({
     <img
       src={src}
       alt={alt}
+      loading={loading}
+      decoding="async"
       className={className}
       onError={() => setError(true)}
       style={{
@@ -35,5 +38,6 @@ export const ImageWithFallback = ({
     />
   );
 };
+
 
 export default ImageWithFallback;
