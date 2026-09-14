@@ -1,12 +1,12 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Moon, Sun, Laptop, ArrowLeft, BookOpen, Trash2, GitCompare, X, Smartphone, Scan, TrendingUp, RefreshCw } from 'lucide-react';
+import { Moon, Sun, Laptop, ArrowLeft, BookOpen, Trash2, GitCompare, X, Smartphone, Scan, TrendingUp } from 'lucide-react';
 import { fetchDeviceData } from './utils/fetchData';
 import { lazyWithRetry } from './utils/lazyWithRetry';
-import { useVersionChecker } from './utils/versionChecker';
 
 import DeviceList from './components/DeviceList';
 import DeviceDetail from './components/DeviceDetail';
+
 
 const GlossaryView = lazy(lazyWithRetry(() => import('./components/GlossaryView')));
 const CompareModal = lazy(lazyWithRetry(() => import('./components/CompareModal')));
@@ -41,12 +41,12 @@ const pageTransitionVariants = {
 };
 
 function App() {
-  const { updateAvailable, reloadApp } = useVersionChecker();
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('devices'); // 'devices' | 'stepup' | 'glossary'
+
 
   
   const handleTabChange = (tab) => {
@@ -421,33 +421,9 @@ function App() {
           <span>Glossary</span>
         </div>
       </nav>
-
-      <AnimatePresence>
-        {updateAvailable && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="update-banner"
-            role="alert"
-          >
-            <div className="update-banner-content">
-              <RefreshCw size={18} className="spin-slow" />
-              <span>A new version of G-Specs is available!</span>
-            </div>
-            <button 
-              className="update-banner-btn"
-              onClick={reloadApp}
-            >
-              Update Now
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
 
-
 export default App;
+
