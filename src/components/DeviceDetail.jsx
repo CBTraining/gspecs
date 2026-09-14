@@ -6,7 +6,9 @@ import { getDeviceSpecGroups } from '../data/specSchema';
 import ImageWithFallback from './common/ImageWithFallback';
 import ActionButton from './device-detail/ActionButton';
 import SpecGroup from './device-detail/SpecGroup';
+import BasketItemTag from './device-detail/BasketItemTag';
 import { TooltipContext } from './device-detail/TooltipContext';
+
 
 
 const DeviceDetail = ({ device, onBack }) => {
@@ -126,24 +128,12 @@ const DeviceDetail = ({ device, onBack }) => {
                   <ShoppingBag size={20} style={{ color: 'var(--text-secondary)' }} />
                   <span>Basket Recommendations</span>
                 </h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem', marginBottom: '0.75rem' }}>
+                  Tap any item to see why it fits this device and who looks for it.
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {device['Basket Recommendations'].split(',').map((item, idx) => (
-                    <span 
-                      key={idx} 
-                      style={{
-                        backgroundColor: 'var(--surface-hover)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '0.5rem',
-                        padding: '0.4rem 0.8rem',
-                        fontSize: '0.85rem',
-                        fontWeight: '500',
-                        color: 'var(--text-primary)',
-                        display: 'inline-flex',
-                        alignItems: 'center'
-                      }}
-                    >
-                      {item.trim()}
-                    </span>
+                    <BasketItemTag key={idx} item={item.trim()} />
                   ))}
                 </div>
               </div>
