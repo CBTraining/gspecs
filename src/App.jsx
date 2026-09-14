@@ -10,12 +10,44 @@ const CompareModal = lazy(() => import('./components/CompareModal'));
 const QuizModal = lazy(() => import('./components/QuizModal'));
 const StepUpChart = lazy(() => import('./components/StepUpChart'));
 
+const pageTransitionVariants = {
+  initial: {
+    opacity: 0,
+    y: 12,
+    filter: 'blur(4px)'
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.2,
+      ease: [0.25, 1, 0.5, 1]
+    }
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    filter: 'blur(4px)',
+    transition: {
+      duration: 0.14,
+      ease: 'easeIn'
+    }
+  }
+};
+
 function App() {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('gragglebook'); // 'gragglebook' | 'glossary'
+  const [activeTab, setActiveTab] = useState('devices'); // 'devices' | 'stepup' | 'glossary'
+  
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSelectedDevice(null);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
   
   // Comparison state
   const [comparisonDevices, setComparisonDevices] = useState([]);
@@ -148,31 +180,22 @@ function App() {
 
           <nav className="desktop-nav">
             <div 
-              className={`nav-item ${activeTab === 'gragglebook' ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab('gragglebook');
-                setSelectedDevice(null);
-              }}
+              className={`nav-item ${activeTab === 'devices' ? 'active' : ''}`}
+              onClick={() => handleTabChange('devices')}
             >
               <Laptop size={20} />
               <span>Devices</span>
             </div>
             <div 
               className={`nav-item ${activeTab === 'stepup' ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab('stepup');
-                setSelectedDevice(null);
-              }}
+              onClick={() => handleTabChange('stepup')}
             >
               <TrendingUp size={20} />
               <span>Step Up</span>
             </div>
             <div 
               className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab('glossary');
-                setSelectedDevice(null);
-              }}
+              onClick={() => handleTabChange('glossary')}
             >
               <BookOpen size={20} />
               <span>Glossary</span>
@@ -215,22 +238,34 @@ function App() {
             <div style={{ textAlign: 'center', padding: '3rem', color: 'red' }}>
               {error}
             </div>
-          ) : activeTab === 'glossary' ? (
-            <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Glossary...</div>}>
-              <GlossaryView />
-            </Suspense>
-          ) : activeTab === 'stepup' ? (
-            <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Step Up Guide...</div>}>
-              <StepUpChart devices={devices} onSelectDevice={setSelectedDevice} />
-            </Suspense>
           ) : (
-            <DeviceList 
-              devices={devices} 
-              onSelectDevice={setSelectedDevice} 
-              comparisonDevices={comparisonDevices}
-              onToggleComparison={toggleComparison}
-              onOpenQuiz={() => setQuizOpen(true)}
-            />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                variants={pageTransitionVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                {activeTab === 'glossary' ? (
+                  <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Glossary...</div>}>
+                    <GlossaryView />
+                  </Suspense>
+                ) : activeTab === 'stepup' ? (
+                  <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Step Up Guide...</div>}>
+                    <StepUpChart devices={devices} onSelectDevice={setSelectedDevice} />
+                  </Suspense>
+                ) : (
+                  <DeviceList 
+                    devices={devices} 
+                    onSelectDevice={setSelectedDevice} 
+                    comparisonDevices={comparisonDevices}
+                    onToggleComparison={toggleComparison}
+                    onOpenQuiz={() => setQuizOpen(true)}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
           )}
         </main>
 
@@ -359,31 +394,22 @@ function App() {
 
       <nav className="bottom-nav" style={{ zIndex: 150 }}>
         <div 
-          className={`nav-item ${activeTab === 'gragglebook' ? 'active' : ''}`} 
-          onClick={() => {
-            setActiveTab('gragglebook');
-            setSelectedDevice(null);
-          }}
+          className={`nav-item ${activeTab === 'devices' ? 'active' : ''}`} 
+          onClick={() => handleTabChange('devices')}
         >
           <Laptop size={24} />
           <span>Devices</span>
         </div>
         <div 
           className={`nav-item ${activeTab === 'stepup' ? 'active' : ''}`} 
-          onClick={() => {
-            setActiveTab('stepup');
-            setSelectedDevice(null);
-          }}
+          onClick={() => handleTabChange('stepup')}
         >
           <TrendingUp size={24} />
           <span>Step Up</span>
         </div>
         <div 
           className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`} 
-          onClick={() => {
-            setActiveTab('glossary');
-            setSelectedDevice(null);
-          }}
+          onClick={() => handleTabChange('glossary')}
         >
           <BookOpen size={24} />
           <span>Glossary</span>
