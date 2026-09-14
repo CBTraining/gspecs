@@ -21,8 +21,20 @@ export const GLOSSARY_MAP = {
   'formfactor': 'The device’s body style: Clamshell is a traditional laptop; 2-in-1 Convertible flips 360° into a touchscreen tablet; Detachable lets you remove the keyboard completely.',
   'wi-fi': 'Your wireless connection to the internet. Wi-Fi 6 and 6E handle crowded home networks and stream smoothly even with lots of family devices online.',
   'bluetooth': 'Connects wireless accessories cord-free—like earbuds, wireless mice, keyboards, or drawing styluses.',
-  'touchscreen': 'Lets you tap, pinch-to-zoom, and swipe directly on the glass display with your finger just like a smartphone or tablet.'
+  'touchscreen': 'Lets you tap, pinch-to-zoom, and swipe directly on the glass display with your finger just like a smartphone or tablet.',
+  'battery life': 'How long your laptop runs on a single charge. 10–14+ hours easily gets you through a full workday or school day without carrying a charger.',
+  'weight': 'How heavy the laptop feels in your hands or bag. Under 3 lbs is ultraportable; 3–4 lbs is typical for 14"-15" laptops; over 4.5 lbs is common for larger workstation or gaming laptops.',
+  'webcam': 'The front-facing camera used for video calls. 1080p FHD delivers significantly sharper, clearer video for remote meetings and family calls than older 720p cameras.',
+  'camera': 'The camera used for video calling and photos. Higher resolution with privacy shutters keeps calls clear and secure.',
+  'microsd': 'A miniature memory card slot that lets you quickly expand your storage or transfer photos directly from drones, cameras, or phones.',
+  'backlit keyboard': 'Keys with gentle illumination underneath, letting you type accurately in dim bedrooms, late-night flights, or darkened rooms.',
+  'keyboard': 'The physical typing keys. Full-size layouts include dedicated number pads, while compact layouts save desk and backpack space.',
+  'usb-c': 'The modern reversible oval port used for charging, connecting displays, and transferring data quickly with modern accessories.',
+  'usb-a': 'The traditional rectangular USB port used for connecting standard flash drives, mice, and older cables without needing an adapter.',
+  'headphone': 'Standard 3.5mm audio jack for connecting wired headphones, headsets, or external speakers without wireless latency.',
+  'cellular': 'Built-in 4G or 5G SIM card support, letting your laptop connect to the internet anywhere like a smartphone without needing Wi-Fi.'
 };
+
 
 export const GLOSSARY_CATEGORIES = [
   {

@@ -1,16 +1,23 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Copy, Globe, User, Cpu, Monitor, Cable, Layers, ShoppingBag, Share2 } from 'lucide-react';
+import { ArrowLeft, Copy, Globe, User, ShoppingBag, Share2 } from 'lucide-react';
 import { getPersonaColor } from '../utils/persona';
+import { getDeviceSpecGroups } from '../data/specSchema';
 import ImageWithFallback from './common/ImageWithFallback';
 import ActionButton from './device-detail/ActionButton';
 import SpecGroup from './device-detail/SpecGroup';
 import { TooltipContext } from './device-detail/TooltipContext';
 
+
 const DeviceDetail = ({ device, onBack }) => {
   const [activeTooltipId, setActiveTooltipId] = useState(null);
 
+  const specGroups = useMemo(() => {
+    return getDeviceSpecGroups(device);
+  }, [device]);
+
   if (!device) return null;
+
 
   const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
 
@@ -142,43 +149,14 @@ const DeviceDetail = ({ device, onBack }) => {
               </div>
             )}
 
-            <SpecGroup title="Specs" icon={Cpu} items={[
-              { label: 'MSRP', value: device.MSRP },
-              { label: 'Processor', value: device.Processor },
-              { label: 'NPU', value: device.NPU },
-              { label: 'RAM', value: device['RAM/Memory'] },
-              { label: 'Storage', value: device.Storage },
-              { label: 'Formfactor', value: device.Formfactor }
-            ]} />
-
-            <SpecGroup title="Screen" icon={Monitor} items={[
-              { label: 'Screen Size', value: device['Screen Size'] },
-              { label: 'Screen Type', value: device['Screen Type'] },
-              { label: 'Resolution', value: device['Resolution'] },
-              { label: 'Aspect Ratio', value: device['Aspect Ratio'] },
-              { label: 'Screen Brightness', value: device['Screen Brightness (nits)'] ? `${device['Screen Brightness (nits)']} nits` : '' },
-              { label: 'Color Accuracy', value: device['Color Accuracy'] },
-              { label: 'Touchscreen', value: device['Touchscreen?'] },
-              { label: 'Pen Compatibility', value: device['Pen Compatibility?'] }
-            ]} />
-
-            <SpecGroup title="Ports & Connectivity" icon={Cable} items={[
-              { label: 'USB-A', value: device['USB-A'] },
-              { label: 'USB-C', value: device['USB-C'] },
-              { label: 'Thunderbolt 4', value: device['Thunderbolt 4'] },
-              { label: 'HDMI', value: device['HDMI'] },
-              { label: 'SD Card Slot', value: device['SD Card Slot'] },
-              { label: 'Headphone Jack', value: device['Headphone Jack'] },
-              { label: 'Wi-Fi standard', value: device['Wi-Fi standard'] },
-              { label: 'Bluetooth Version', value: device['Bluetooth Version'] }
-            ]} />
-
-            <SpecGroup title="Other" icon={Layers} items={[
-              { label: 'Keyboard Size', value: device['Keyboard size'] },
-              { label: 'Backlit Keyboard', value: device['Backlit Keyboard?'] },
-              { label: 'Weight', value: device.Weight },
-              { label: 'Battery Life', value: device['Battery Life'] }
-            ]} />
+            {specGroups.map((group, idx) => (
+              <SpecGroup 
+                key={group.title || idx} 
+                title={group.title} 
+                icon={group.icon} 
+                items={group.items} 
+              />
+            ))}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem', marginBottom: '1.5rem' }}>
