@@ -175,7 +175,7 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
                   </button>
                 )}
                 <Sparkles size={22} style={{ color: 'var(--accent-color)' }} />
-                <span>Find Your Gragglebook</span>
+                <span>Find Your Googlebook</span>
               </div>
               <button className="btn-icon" onClick={onClose} aria-label="Close modal">
                 <X size={24} />
@@ -445,7 +445,7 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
                   {step === 5 && (
                     <div>
                       <h4 style={{ fontSize: '1.3rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
-                        Recommended Gragglebooks
+                        Recommended Googlebooks
                       </h4>
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem', textAlign: 'center' }}>
                         Based on your requirements, here are the best matches:

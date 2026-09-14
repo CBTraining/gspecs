@@ -47,8 +47,8 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
       const normalizedSet = new Set();
       uniqueVals.forEach(v => {
         const norm = v.trim().replace(/s$/, '');
-        if (norm.toLowerCase() === 'chromerbook') normalizedSet.add('Chromerbook');
-        else if (norm.toLowerCase() === 'gragglebook') normalizedSet.add('Gragglebook');
+        if (norm.toLowerCase() === 'chromerbook' || norm.toLowerCase() === 'chromebook') normalizedSet.add('Chromebook');
+        else if (norm.toLowerCase() === 'gragglebook' || norm.toLowerCase() === 'googlebook') normalizedSet.add('Googlebook');
         else normalizedSet.add(v.trim());
       });
       uniqueVals = [...normalizedSet];

@@ -37,13 +37,13 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
     localStorage.setItem('gspecs_activeFilters', JSON.stringify(activeFilters));
   }, [activeFilters]);
 
-  // Determine current active Device Type toggle ('All', 'Gragglebook', 'Chromerbook')
+  // Determine current active Device Type toggle ('All', 'Googlebook', 'Chromebook')
   const currentDeviceType = useMemo(() => {
     const devFilter = activeFilters.Device || [];
     if (devFilter.length === 1) {
       const val = devFilter[0].toLowerCase();
-      if (val.includes('graggle')) return 'Gragglebook';
-      if (val.includes('chromer')) return 'Chromerbook';
+      if (val.includes('google') || val.includes('graggle')) return 'Googlebook';
+      if (val.includes('chrome') || val.includes('chromer')) return 'Chromebook';
     }
     return 'All';
   }, [activeFilters]);
@@ -53,10 +53,10 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
       const next = { ...prev };
       if (type === 'All') {
         delete next.Device;
-      } else if (type === 'Gragglebook') {
-        next.Device = ['Gragglebook'];
-      } else if (type === 'Chromerbook') {
-        next.Device = ['Chromerbook'];
+      } else if (type === 'Googlebook') {
+        next.Device = ['Googlebook'];
+      } else if (type === 'Chromebook') {
+        next.Device = ['Chromebook'];
       }
       return next;
     });
@@ -94,6 +94,8 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
           const deviceVal = (device.Device || '').toLowerCase().replace(/s$/, '');
           const matches = selectedValues.some(val => {
             const v = val.toLowerCase().replace(/s$/, '');
+            if (v.includes('google') && (deviceVal.includes('google') || deviceVal.includes('graggle'))) return true;
+            if (v.includes('chrome') && (deviceVal.includes('chrome') || deviceVal.includes('chromer'))) return true;
             return deviceVal.includes(v) || v.includes(deviceVal);
           });
           if (!matches) return false;
@@ -145,7 +147,7 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
             boxShadow: 'var(--shadow-sm)'
           }}
         >
-          {['All', 'Gragglebook', 'Chromerbook'].map((type) => {
+          {['All', 'Googlebook', 'Chromebook'].map((type) => {
             const isActive = currentDeviceType === type;
             return (
               <button
@@ -239,7 +241,7 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
             <span style={{ fontSize: '1.75rem' }}>✨</span>
             <div>
               <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.15rem' }}>
-                Find Your Gragglebook
+                Find Your Googlebook
               </h4>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                 Answer 3 quick questions to discover the perfect model matching your budget & needs.
