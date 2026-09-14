@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Moon, Sun, Laptop, ArrowLeft, BookOpen, Trash2, GitCompare, X, Smartphone, Scan, TrendingUp } from 'lucide-react';
 import { fetchDeviceData } from './utils/fetchData';
 import DeviceList from './components/DeviceList';
 import DeviceDetail from './components/DeviceDetail';
-import GlossaryView from './components/GlossaryView';
-import CompareModal from './components/CompareModal';
-import QuizModal from './components/QuizModal';
-import StepUpChart from './components/StepUpChart';
+
+const GlossaryView = lazy(() => import('./components/GlossaryView'));
+const CompareModal = lazy(() => import('./components/CompareModal'));
+const QuizModal = lazy(() => import('./components/QuizModal'));
+const StepUpChart = lazy(() => import('./components/StepUpChart'));
 
 function App() {
   const [devices, setDevices] = useState([]);
@@ -45,7 +46,7 @@ function App() {
       if (savedTheme === 'light' || savedTheme === 'dark') {
         return savedTheme;
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
     
@@ -215,9 +216,13 @@ function App() {
               {error}
             </div>
           ) : activeTab === 'glossary' ? (
-            <GlossaryView />
+            <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Glossary...</div>}>
+              <GlossaryView />
+            </Suspense>
           ) : activeTab === 'stepup' ? (
-            <StepUpChart devices={devices} onSelectDevice={setSelectedDevice} />
+            <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Step Up Guide...</div>}>
+              <StepUpChart devices={devices} onSelectDevice={setSelectedDevice} />
+            </Suspense>
           ) : (
             <DeviceList 
               devices={devices} 
@@ -331,18 +336,26 @@ function App() {
         )}
       </AnimatePresence>
 
-      <CompareModal 
-        isOpen={isComparing} 
-        onClose={() => setIsComparing(false)} 
-        devices={comparisonDevices} 
-      />
+      <Suspense fallback={null}>
+        {isComparing && (
+          <CompareModal 
+            isOpen={isComparing} 
+            onClose={() => setIsComparing(false)} 
+            devices={comparisonDevices} 
+          />
+        )}
+      </Suspense>
 
-      <QuizModal 
-        isOpen={quizOpen} 
-        onClose={() => setQuizOpen(false)} 
-        devices={devices} 
-        onSelectDevice={setSelectedDevice} 
-      />
+      <Suspense fallback={null}>
+        {quizOpen && (
+          <QuizModal 
+            isOpen={quizOpen} 
+            onClose={() => setQuizOpen(false)} 
+            devices={devices} 
+            onSelectDevice={setSelectedDevice} 
+          />
+        )}
+      </Suspense>
 
       <nav className="bottom-nav" style={{ zIndex: 150 }}>
         <div 
