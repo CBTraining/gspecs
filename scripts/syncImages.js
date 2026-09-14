@@ -1,8 +1,9 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Papa from 'papaparse';
 import bwipjs from 'bwip-js';
+import sharp from 'sharp';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +21,7 @@ const extractDriveId = (url) => {
   return match ? match[1] : null;
 };
 
-const fetchWithTimeout = async (url, timeoutMs = 5000) => {
+const fetchWithTimeout = async (url, timeoutMs = 8000) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -33,16 +34,29 @@ const fetchWithTimeout = async (url, timeoutMs = 5000) => {
   }
 };
 
+const optimizeAndSaveImage = async (buffer, filepath) => {
+  try {
+    const optimized = await sharp(buffer)
+      .resize({ width: 1200, withoutEnlargement: true })
+      .jpeg({ quality: 82, progressive: true })
+      .toBuffer();
+    fs.writeFileSync(filepath, optimized);
+    console.log(`Saved optimized image to ${filepath} (${Math.round(optimized.length / 1024)} KB)`);
+  } catch (e) {
+    fs.writeFileSync(filepath, buffer);
+    console.log(`Saved raw image to ${filepath}`);
+  }
+};
+
 const downloadImage = async (url, filepath) => {
   try {
     console.log(`Downloading ${url}...`);
-    const response = await fetchWithTimeout(url, 5000);
+    const response = await fetchWithTimeout(url, 8000);
     if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
     
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    fs.writeFileSync(filepath, buffer);
-    console.log(`Saved to ${filepath}`);
+    await optimizeAndSaveImage(buffer, filepath);
   } catch (error) {
     console.error(`Error downloading ${url}:`, error.message);
   }
@@ -90,41 +104,44 @@ const syncImages = async () => {
     }
   }
 
-  Papa.parse(csvText, {
-    header: true,
-    skipEmptyLines: true,
-    complete: async (results) => {
-      const rows = results.data.filter(row => row['Device Name']);
-      
-      for (const row of rows) {
-        const imageVal = row['Device Image'];
-        const sku = row.SKU;
+  await new Promise((resolve) => {
+    Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        const rows = results.data.filter(row => row['Device Name']);
         
-        // Generate barcode
-        if (sku) {
-          const barcodePath = path.join(BARCODES_DIR, `${sku.replace(/[^a-zA-Z0-9_-]/g, '')}.png`);
-          if (!fs.existsSync(barcodePath)) {
-            console.log(`Generating barcode for ${sku}...`);
-            await generateBarcode(sku, barcodePath);
-          }
-        }
-
-        // Download image
-        if (!imageVal) continue;
-        const driveId = extractDriveId(imageVal);
-        if (driveId) {
-          const safeTitle = row['Device Name'].replace(/[^a-zA-Z0-9 -]/g, '').trim();
-          const filename = `${safeTitle}_image.jpg`;
-          const filepath = path.join(IMAGES_DIR, filename);
+        for (const row of rows) {
+          const imageVal = row['Device Image'];
+          const sku = row.SKU;
           
-          if (!fs.existsSync(filepath)) {
-            const downloadUrl = `https://drive.google.com/uc?export=download&id=${driveId}`;
-            await downloadImage(downloadUrl, filepath);
+          // Generate barcode
+          if (sku) {
+            const barcodePath = path.join(BARCODES_DIR, `${sku.replace(/[^a-zA-Z0-9_-]/g, '')}.png`);
+            if (!fs.existsSync(barcodePath)) {
+              console.log(`Generating barcode for ${sku}...`);
+              await generateBarcode(sku, barcodePath);
+            }
+          }
+
+          // Download image
+          if (!imageVal) continue;
+          const driveId = extractDriveId(imageVal);
+          if (driveId) {
+            const safeTitle = row['Device Name'].replace(/[^a-zA-Z0-9 -]/g, '').trim();
+            const filename = `${safeTitle}_image.jpg`;
+            const filepath = path.join(IMAGES_DIR, filename);
+            
+            if (!fs.existsSync(filepath)) {
+              const downloadUrl = `https://drive.google.com/uc?export=download&id=${driveId}`;
+              await downloadImage(downloadUrl, filepath);
+            }
           }
         }
+        console.log('Sync complete!');
+        resolve();
       }
-      console.log('Sync complete!');
-    }
+    });
   });
 };
 

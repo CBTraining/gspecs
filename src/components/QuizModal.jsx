@@ -1,23 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, ArrowRight, ArrowLeft, RefreshCw, Laptop, Smartphone, Battery, Monitor } from 'lucide-react';
-import { getPersonaColor } from '../utils/persona';
-
-const parsePrice = (priceStr) => {
-  if (!priceStr) return 0;
-  return Number(priceStr.replace(/[^0-9.]/g, ''));
-};
-
-const parseWeight = (weightStr) => {
-  if (!weightStr) return 0;
-  return Number(weightStr.replace(/[^0-9.]/g, ''));
-};
-
-const parseBattery = (batteryStr) => {
-  if (!batteryStr) return 0;
-  return Number(batteryStr.replace(/[^0-9.]/g, ''));
-};
+import { X, Sparkles, ArrowLeft, RefreshCw, Laptop, Smartphone, Battery, Monitor } from 'lucide-react';
+import { calculateRecommendations } from '../utils/quizScoring';
+import QuizResultCard from './quiz/QuizResultCard';
 
 const stepVariants = {
   enter: (direction) => ({
@@ -88,52 +74,7 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
   // Calculate top recommendations based on answers
   const recommendations = useMemo(() => {
     if (step !== 5) return [];
-
-    const scored = devices.map(device => {
-      let score = 0;
-      
-      // 1. Persona match (40% weight)
-      if (answers.persona && device.Persona === answers.persona) {
-        score += 40;
-      }
-
-      // 2. Budget match (30% weight)
-      const price = parsePrice(device.MSRP);
-      if (price <= answers.budget) {
-        score += 30;
-      } else if (price <= answers.budget * 1.15) {
-        // Close enough budget match gets partial points
-        score += 15;
-      }
-
-      // 3. Portability vs Screen Size match (15% weight)
-      if (answers.portabilityVsScreen === 'portability') {
-        const weight = parseWeight(device.Weight);
-        if (weight > 0 && weight <= 3.2) score += 15;
-      } else if (answers.portabilityVsScreen === 'large-screen') {
-        const size = parseFloat(device['Screen Size']);
-        if (size >= 14) score += 15;
-      }
-
-      // 4. Touchscreen vs Battery match (15% weight)
-      if (answers.touchVsBattery === 'touch') {
-        if (device['Touchscreen?'] === 'Yes') score += 15;
-      } else if (answers.touchVsBattery === 'battery') {
-        const hours = parseBattery(device['Battery Life']);
-        if (hours >= 11) score += 15;
-      }
-
-      return {
-        device,
-        matchPercentage: score
-      };
-    });
-
-    // Sort by score descending, take top 3
-    return scored
-      .filter(item => item.matchPercentage > 0)
-      .sort((a, b) => b.matchPercentage - a.matchPercentage)
-      .slice(0, 3);
+    return calculateRecommendations(devices, answers);
   }, [step, devices, answers]);
 
   const modalContent = (
@@ -452,84 +393,15 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
                       </p>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {recommendations.map(({ device, matchPercentage }) => {
-                          const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
-                          return (
-                            <div 
-                              key={device.SKU}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '1rem',
-                                backgroundColor: 'var(--surface-hover)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: '1.25rem',
-                                padding: '1rem'
-                              }}
-                            >
-                              <div style={{ 
-                                width: '70px', 
-                                height: '70px', 
-                                backgroundColor: '#ffffff',
-                                borderRadius: '0.5rem',
-                                padding: '0.25rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                border: '1px solid var(--border-color)',
-                                overflow: 'hidden',
-                                flexShrink: 0
-                              }}>
-                                {device['Device Image'] ? (
-                                  <img 
-                                    src={device['Device Image']} 
-                                    alt="" 
-                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                  />
-                                ) : (
-                                  isLaptop ? <Laptop size={24} style={{ color: '#000000' }} /> : <Smartphone size={24} style={{ color: '#000000' }} />
-                                )}
-                              </div>
-
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <h5 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {device['Device Name']}
-                                </h5>
-                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                                  <span style={{ fontSize: '0.8rem', color: 'var(--accent-color)', fontWeight: '700' }}>
-                                    {matchPercentage}% Match
-                                  </span>
-                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>|</span>
-                                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                    {device.MSRP}
-                                  </span>
-                                  <span style={{ 
-                                    fontSize: '0.75rem', 
-                                    color: '#ffffff', 
-                                    backgroundColor: getPersonaColor(device.Persona), 
-                                    borderRadius: '0.25rem',
-                                    padding: '0.1rem 0.4rem',
-                                    fontWeight: '600'
-                                  }}>
-                                    {device.Persona}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <button 
-                                className="btn-primary" 
-                                style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.25rem', borderRadius: '1rem', flexShrink: 0 }}
-                                onClick={() => {
-                                  onSelectDevice(device);
-                                  onClose();
-                                }}
-                              >
-                                <span>View</span>
-                                <ArrowRight size={14} />
-                              </button>
-                            </div>
-                          );
-                        })}
+                        {recommendations.map(({ device, matchPercentage }) => (
+                          <QuizResultCard
+                            key={device.SKU}
+                            device={device}
+                            matchPercentage={matchPercentage}
+                            onSelectDevice={onSelectDevice}
+                            onClose={onClose}
+                          />
+                        ))}
 
                         {recommendations.length === 0 && (
                           <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>

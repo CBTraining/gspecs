@@ -1,6 +1,8 @@
-import Papa from 'papaparse';
+﻿import Papa from 'papaparse';
 
 const SHEET_URL = import.meta.env.BASE_URL + 'devices.csv';
+const CACHE_KEY = 'gspecs_devices_cache_v1';
+const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 const convertDriveLink = (url, deviceName) => {
   if (!url) return url;
@@ -22,20 +24,41 @@ const convertDriveLink = (url, deviceName) => {
 };
 
 export const fetchDeviceData = () => {
+  // Check sessionStorage cache first
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { timestamp, data } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_TTL_MS && Array.isArray(data) && data.length > 0) {
+        return Promise.resolve(data);
+      }
+    }
+  } catch {
+    // Ignore storage parse errors and proceed to fresh fetch
+  }
+
   return new Promise((resolve, reject) => {
     Papa.parse(SHEET_URL, {
       download: true,
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        // Filter out any rows that might be completely empty but not caught by skipEmptyLines
-        // and convert any Google Drive links into direct image links
         const validData = results.data
           .filter(row => row['Device Name'])
           .map(row => ({
             ...row,
             'Device Image': convertDriveLink(row['Device Image'], row['Device Name'])
           }));
+
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+            timestamp: Date.now(),
+            data: validData
+          }));
+        } catch {
+          // Ignore quota errors
+        }
+
         resolve(validData);
       },
       error: (error) => {
