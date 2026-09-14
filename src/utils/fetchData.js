@@ -1,8 +1,10 @@
-﻿import Papa from 'papaparse';
+import Papa from 'papaparse';
 
-const SHEET_URL = import.meta.env.BASE_URL + 'devices.csv';
-const CACHE_KEY = 'gspecs_devices_cache_v1';
+const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
+const SHEET_URL = `${import.meta.env.BASE_URL}devices.csv?v=${appVersion}`;
+const CACHE_KEY = `gspecs_devices_cache_${appVersion}`;
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+
 
 const convertDriveLink = (url, deviceName) => {
   if (!url) return url;
