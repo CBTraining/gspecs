@@ -105,8 +105,16 @@ export const fetchDeviceData = () => {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
+        const isDeviceActive = (row) => {
+          const keys = Object.keys(row);
+          const currentKey = keys.find(k => k.trim().toLowerCase() === 'current') || keys[2];
+          const val = currentKey ? row[currentKey] : row['Current'];
+          if (!val) return false;
+          return String(val).trim().toUpperCase() === 'TRUE';
+        };
+
         const validData = results.data
-          .filter(row => row['Device Name'])
+          .filter(row => row['Device Name'] && isDeviceActive(row))
           .map(row => ({
             ...row,
             'Device Image': convertDriveLink(row['Device Image'], row['Device Name'])

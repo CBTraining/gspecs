@@ -158,7 +158,15 @@ const syncImages = async () => {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
-        const rows = results.data.filter(row => row['Device Name']);
+        const isDeviceActive = (row) => {
+          const keys = Object.keys(row);
+          const currentKey = keys.find(k => k.trim().toLowerCase() === 'current') || keys[2];
+          const val = currentKey ? row[currentKey] : row['Current'];
+          if (!val) return false;
+          return String(val).trim().toUpperCase() === 'TRUE';
+        };
+
+        const rows = results.data.filter(row => row['Device Name'] && isDeviceActive(row));
         
         for (const row of rows) {
           const imageVal = row['Device Image'];

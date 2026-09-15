@@ -71,6 +71,7 @@ export const KNOWN_SPEC_GROUPS = [
 export const INTERNAL_RESERVED_COLUMNS = new Set([
   'Device',
   'Device Name',
+  'Current',
   'Device Image',
   'OEM (brand)',
   'Device Online Listing',
