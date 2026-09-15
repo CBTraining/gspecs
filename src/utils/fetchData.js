@@ -1,8 +1,11 @@
 import Papa from 'papaparse';
+import { setDynamicBasketDetails } from '../data/basketContext';
 
 const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
 const SHEET_URL = `${import.meta.env.BASE_URL}devices.csv?v=${appVersion}`;
+const ACCESSORIES_URL = `${import.meta.env.BASE_URL}accessories.csv?v=${appVersion}`;
 const CACHE_KEY = `gspecs_devices_cache_${appVersion}`;
+const ACCESSORIES_CACHE_KEY = `gspecs_accessories_cache_${appVersion}`;
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 
@@ -25,7 +28,64 @@ const convertDriveLink = (url, deviceName) => {
   return url;
 };
 
+export const fetchAccessoriesData = () => {
+  try {
+    const cached = sessionStorage.getItem(ACCESSORIES_CACHE_KEY);
+    if (cached) {
+      const { timestamp, data } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_TTL_MS && data && typeof data === 'object') {
+        setDynamicBasketDetails(data);
+        return Promise.resolve(data);
+      }
+    }
+  } catch {
+    // Ignore cache error
+  }
+
+  return new Promise((resolve) => {
+    Papa.parse(ACCESSORIES_URL, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const details = {};
+        if (results && results.data) {
+          results.data.forEach(row => {
+            const name = row['Accessory'] || row['accessory'] || row['Item'] || row['item'] || row['Name'] || row['name'];
+            const why = row["Why it's great for the basket"] || row['Why'] || row['why'] || row['Rationale'] || row['rationale'];
+            const customer = row['Who looks for this'] || row['Customer'] || row['customer'] || row['Who'] || row['who'];
+            if (name && (why || customer)) {
+              details[name.trim().toLowerCase()] = {
+                why: (why || '').trim(),
+                customer: (customer || '').trim()
+              };
+            }
+          });
+        }
+
+        try {
+          sessionStorage.setItem(ACCESSORIES_CACHE_KEY, JSON.stringify({
+            timestamp: Date.now(),
+            data: details
+          }));
+        } catch {
+          // Ignore storage quota
+        }
+
+        setDynamicBasketDetails(details);
+        resolve(details);
+      },
+      error: () => {
+        resolve({});
+      }
+    });
+  });
+};
+
 export const fetchDeviceData = () => {
+  // Concurrently fetch accessory data in background
+  fetchAccessoriesData().catch(() => {});
+
   // Check sessionStorage cache first
   try {
     const cached = sessionStorage.getItem(CACHE_KEY);

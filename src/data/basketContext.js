@@ -101,18 +101,42 @@ export const BASKET_ITEM_DETAILS = {
   }
 };
 
+let dynamicBasketDetails = {};
+
+/**
+ * Allows dynamic injection of basket details from Google Sheets / CSV.
+ */
+export const setDynamicBasketDetails = (details) => {
+  if (details && typeof details === 'object') {
+    dynamicBasketDetails = { ...dynamicBasketDetails, ...details };
+  }
+};
+
 /**
  * Normalizes item names to match details cleanly.
+ * Checks dynamic sheet data first, then falls back to built-in grounded definitions.
  */
 export const getBasketItemInfo = (itemName) => {
   if (!itemName) return null;
   const clean = itemName.trim().toLowerCase();
 
+  // 1. Direct match in dynamic sheet data
+  if (dynamicBasketDetails[clean]) {
+    return dynamicBasketDetails[clean];
+  }
+
+  // 2. Direct match in built-in definitions
   if (BASKET_ITEM_DETAILS[clean]) {
     return BASKET_ITEM_DETAILS[clean];
   }
 
-  // Fuzzy match fallback
+  // 3. Fuzzy match in dynamic sheet data
+  const dynamicMatchKey = Object.keys(dynamicBasketDetails).find(k => clean.includes(k) || k.includes(clean));
+  if (dynamicMatchKey) {
+    return dynamicBasketDetails[dynamicMatchKey];
+  }
+
+  // 4. Fuzzy match fallback in built-in definitions
   const matchKey = Object.keys(BASKET_ITEM_DETAILS).find(k => clean.includes(k) || k.includes(clean));
   if (matchKey) {
     return BASKET_ITEM_DETAILS[matchKey];

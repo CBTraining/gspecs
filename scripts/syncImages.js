@@ -1,4 +1,4 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Papa from 'papaparse';
@@ -87,6 +87,7 @@ const syncImages = async () => {
   console.log('Fetching Google Sheet...');
   const publicDir = path.join(__dirname, '../public');
   const csvPath = path.join(publicDir, 'devices.csv');
+  const accessoriesCsvPath = path.join(publicDir, 'accessories.csv');
 
   let csvText;
   try {
@@ -101,6 +102,22 @@ const syncImages = async () => {
     } else {
       console.error('No local devices.csv available!');
       return;
+    }
+  }
+
+  // Optional: Sync accessories tab if URL or GID is configured
+  const accessoriesSheetUrl = process.env.ACCESSORIES_SHEET_URL || 
+    (process.env.ACCESSORIES_GID ? `https://docs.google.com/spreadsheets/d/1Y_xjXxEWVQpXJ-RWqRCScVWhnn4woeac9Phy-bCJXCA/export?format=csv&gid=${process.env.ACCESSORIES_GID}` : null);
+
+  if (accessoriesSheetUrl) {
+    try {
+      console.log('Fetching Accessories Sheet...');
+      const accResponse = await fetchWithTimeout(accessoriesSheetUrl, 5000);
+      const accText = await accResponse.text();
+      fs.writeFileSync(accessoriesCsvPath, accText);
+      console.log('Saved CSV to public/accessories.csv');
+    } catch (err) {
+      console.warn('Could not fetch remote accessories sheet:', err.message);
     }
   }
 
