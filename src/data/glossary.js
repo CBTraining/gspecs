@@ -32,7 +32,12 @@ export const GLOSSARY_MAP = {
   'usb-c': 'The modern reversible oval port used for charging, connecting displays, and transferring data quickly with modern accessories.',
   'usb-a': 'The traditional rectangular USB port used for connecting standard flash drives, mice, and older cables without needing an adapter.',
   'headphone': 'Standard 3.5mm audio jack for connecting wired headphones, headsets, or external speakers without wireless latency.',
-  'cellular': 'Built-in 4G or 5G SIM card support, letting your laptop connect to the internet anywhere like a smartphone without needing Wi-Fi.'
+  'cellular': 'Built-in 4G or 5G SIM card support, letting your laptop connect to the internet anywhere like a smartphone without needing Wi-Fi.',
+  'security': 'Hardware and biometric protections—such as fingerprint readers and facial recognition—that protect your files and logins without typing passwords.',
+  'fingerprint sensor': 'A biometric touch sensor that lets you securely unlock your laptop, sign into apps, and authorize purchases with a quick tap of your finger.',
+  'face authentication': 'Hands-free biometric login that scans your facial features via the camera to instantly unlock your device when you sit down.',
+  'build': 'The exterior materials and chassis construction—such as aluminum, magnesium alloy, or carbon fiber—determining durability, weight, and premium feel.',
+  'ports': 'The physical connection jacks on the laptop (USB-C, USB-A, HDMI, headphone jack) for plugging in monitors, chargers, and accessories.'
 };
 
 
@@ -146,6 +151,14 @@ export const GLOSSARY_CATEGORIES = [
       { 
         name: 'Formfactor', 
         text: 'The physical shape: Clamshell is a traditional laptop; 2-in-1 Convertible rotates 360° into a tablet for drawing and touch; Detachable lets you remove the keyboard.' 
+      },
+      { 
+        name: 'Build', 
+        text: 'The chassis materials and construction—such as aluminum, magnesium alloy, or carbon fiber—determining durability, rigidity, and premium in-hand feel.' 
+      },
+      { 
+        name: 'Security', 
+        text: 'Biometric and hardware protections (like fingerprint scanners and facial recognition) that keep your device secure without passwords.' 
       },
       { 
         name: 'MSRP', 

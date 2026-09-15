@@ -85,9 +85,13 @@ export const DeviceCard = memo(({
             </h3>
             <div className="device-sku-text">SKU: {device.SKU || 'N/A'}</div>
             {device.Persona && (
-              <span className="persona-tag" style={{ backgroundColor: getPersonaColor(device.Persona) }}>
-                {device.Persona}
-              </span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.2rem' }}>
+                {device.Persona.split(',').map((p, i) => (
+                  <span key={i} className="persona-tag" style={{ backgroundColor: getPersonaColor(p) }}>
+                    {p.trim()}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
         </div>

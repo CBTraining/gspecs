@@ -38,6 +38,7 @@ export const KNOWN_SPEC_GROUPS = [
     title: 'Ports & Connectivity',
     icon: Cable,
     fields: [
+      { label: 'Ports', key: 'Ports' },
       { label: 'USB-A', key: 'USB-A' },
       { label: 'USB-C', key: 'USB-C' },
       { label: 'Thunderbolt 4', key: 'Thunderbolt 4' },
@@ -48,14 +49,15 @@ export const KNOWN_SPEC_GROUPS = [
       { label: 'Headphone Jack', key: 'Headphone Jack' },
       { label: 'Network Card', key: 'Network Card' },
       { label: 'Wi-Fi standard', key: 'Wi-Fi standard' },
-      { label: 'Bluetooth Version', key: 'Bluetooth Version' },
-      { label: 'Ports', key: 'Ports' }
+      { label: 'Bluetooth Version', key: 'Bluetooth Version' }
     ]
   },
   {
     title: 'Other',
     icon: Layers,
     fields: [
+      { label: 'Build', key: 'Build' },
+      { label: 'Security', key: 'Security' },
       { label: 'Keyboard Size', key: 'Keyboard size' },
       { label: 'Backlit Keyboard', key: 'Backlit Keyboard?' },
       { label: 'Weight', key: 'Weight' },

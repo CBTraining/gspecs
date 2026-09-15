@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Cpu, Monitor, Cable, Layers, DollarSign, Weight, Clock, Laptop, Smartphone } from 'lucide-react';
+import { X, Cpu, Monitor, Cable, Layers, DollarSign, Weight, Clock, Laptop, Smartphone, ShieldCheck } from 'lucide-react';
 
 const SPEC_ROWS = [
   { label: 'MSRP', key: 'MSRP', icon: DollarSign },
@@ -20,6 +20,9 @@ const SPEC_ROWS = [
   { label: 'Battery Life', key: 'Battery Life', icon: Clock },
   { label: 'Weight', key: 'Weight', icon: Weight },
   { label: 'Form Factor', key: 'Formfactor', icon: Laptop },
+  { label: 'Ports', key: 'Ports', icon: Cable },
+  { label: 'Security', key: 'Security', icon: ShieldCheck },
+  { label: 'Build', key: 'Build', icon: Layers },
   { label: 'USB-C Ports', key: 'USB-C', icon: Cable },
   { label: 'USB-A Ports', key: 'USB-A', icon: Cable },
   { label: 'HDMI', key: 'HDMI', icon: Cable },
@@ -168,6 +171,11 @@ const CompareModal = ({ isOpen, onClose, devices }) => {
                           if (val && row.suffix && !String(val).endsWith(row.suffix)) {
                             val = `${val}${row.suffix}`;
                           }
+
+                          const pillItems = typeof val === 'string' && !/^\$?\d{1,3}(,\d{3})+(\.\d+)?$/.test(val.trim()) && val.includes(',')
+                            ? val.split(',').map(s => s.trim()).filter(Boolean)
+                            : null;
+
                           return (
                             <td 
                               key={device.SKU} 
@@ -178,7 +186,17 @@ const CompareModal = ({ isOpen, onClose, devices }) => {
                                 color: 'var(--text-secondary)'
                               }}
                             >
-                              {val || 'N/A'}
+                              {pillItems && pillItems.length > 1 ? (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', justifyContent: 'center' }}>
+                                  {pillItems.map((p, i) => (
+                                    <span key={i} className="spec-pill" style={{ fontSize: '0.78rem', padding: '0.2rem 0.55rem' }}>
+                                      {p}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                val || 'N/A'
+                              )}
                             </td>
                           );
                         })}

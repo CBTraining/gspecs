@@ -59,9 +59,13 @@ const DeviceDetail = ({ device, onBack }) => {
                 <div className="detail-header-subtitle">{device.Formfactor || device['OEM (brand)']}</div>
               </div>
               {device.Persona && (
-                <span className="persona-tag" style={{ backgroundColor: getPersonaColor(device.Persona) }}>
-                  {device.Persona}
-                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                  {device.Persona.split(',').map((p, i) => (
+                    <span key={i} className="persona-tag" style={{ backgroundColor: getPersonaColor(p) }}>
+                      {p.trim()}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
           </div>

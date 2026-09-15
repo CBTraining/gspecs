@@ -836,8 +836,14 @@ body {
 .spec-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 1rem 0;
   border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+}
+
+.spec-row.spec-row-multiline {
+  align-items: flex-start;
 }
 
 .spec-row:last-child {
@@ -847,6 +853,11 @@ body {
 .spec-label {
   color: var(--text-secondary);
   font-size: 0.9375rem;
+  flex-shrink: 0;
+}
+
+.spec-row.spec-row-multiline .spec-label {
+  padding-top: 0.35rem;
 }
 
 .nav-item.active {
@@ -863,7 +874,50 @@ body {
   font-weight: 500;
   font-size: 0.9375rem;
   text-align: right;
-  max-width: 60%;
+  max-width: 65%;
+}
+
+.spec-pills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  max-width: 75%;
+}
+
+.spec-pill {
+  background-color: var(--surface-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  line-height: 1.35;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s ease;
+}
+
+.spec-pill:hover {
+  border-color: var(--accent-color);
+}
+
+@media (max-width: 640px) {
+  .spec-row.spec-row-multiline {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
+  .spec-row.spec-row-multiline .spec-label {
+    padding-top: 0 !important;
+  }
+  .spec-pills-wrap {
+    max-width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 /* Filter Modal */
