@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import https from 'https';
 import Papa from 'papaparse';
 import bwipjs from 'bwip-js';
 import sharp from 'sharp';
@@ -8,7 +9,9 @@ import sharp from 'sharp';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Y_xjXxEWVQpXJ-RWqRCScVWhnn4woeac9Phy-bCJXCA/export?format=csv';
+const SPREADSHEET_ID = '1Y_xjXxEWVQpXJ-RWqRCScVWhnn4woeac9Phy-bCJXCA';
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv`;
+const BASKET_SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=515499313`;
 const IMAGES_DIR = path.join(__dirname, '../public/images');
 const BARCODES_DIR = path.join(__dirname, '../public/barcodes');
 
@@ -30,7 +33,34 @@ const fetchWithTimeout = async (url, timeoutMs = 8000) => {
     return res;
   } catch (err) {
     clearTimeout(timeout);
-    throw err;
+    // Resilient fallback using https module for local environments with custom CA/proxies
+    return new Promise((resolve, reject) => {
+      const makeReq = (targetUrl) => {
+        const req = https.get(targetUrl, { rejectUnauthorized: false }, (res) => {
+          if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+            makeReq(res.headers.location);
+            return;
+          }
+          const chunks = [];
+          res.on('data', chunk => chunks.push(chunk));
+          res.on('end', () => {
+            const buffer = Buffer.concat(chunks);
+            resolve({
+              ok: res.statusCode >= 200 && res.statusCode < 300,
+              text: async () => buffer.toString('utf8'),
+              arrayBuffer: async () => buffer.buffer,
+              statusText: res.statusMessage
+            });
+          });
+        });
+        req.on('error', reject);
+        req.setTimeout(timeoutMs, () => {
+          req.destroy();
+          reject(new Error('Request timeout'));
+        });
+      };
+      makeReq(url);
+    });
   }
 };
 
@@ -105,19 +135,21 @@ const syncImages = async () => {
     }
   }
 
-  // Optional: Sync accessories tab if URL or GID is configured
+  // Sync Basket tab from Google Sheet
   const accessoriesSheetUrl = process.env.ACCESSORIES_SHEET_URL || 
-    (process.env.ACCESSORIES_GID ? `https://docs.google.com/spreadsheets/d/1Y_xjXxEWVQpXJ-RWqRCScVWhnn4woeac9Phy-bCJXCA/export?format=csv&gid=${process.env.ACCESSORIES_GID}` : null);
+    (process.env.ACCESSORIES_GID ? `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${process.env.ACCESSORIES_GID}` : BASKET_SHEET_URL);
 
   if (accessoriesSheetUrl) {
     try {
-      console.log('Fetching Accessories Sheet...');
+      console.log('Fetching Basket / Accessories Sheet...');
       const accResponse = await fetchWithTimeout(accessoriesSheetUrl, 5000);
       const accText = await accResponse.text();
-      fs.writeFileSync(accessoriesCsvPath, accText);
-      console.log('Saved CSV to public/accessories.csv');
+      if (accText && accText.includes('Accessory')) {
+        fs.writeFileSync(accessoriesCsvPath, accText);
+        console.log('Saved CSV to public/accessories.csv');
+      }
     } catch (err) {
-      console.warn('Could not fetch remote accessories sheet:', err.message);
+      console.warn('Could not fetch remote accessories sheet (using local accessories.csv if present):', err.message);
     }
   }
 
