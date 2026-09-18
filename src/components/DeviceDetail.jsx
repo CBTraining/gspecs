@@ -1,15 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Copy, Globe, User, ShoppingBag, Share2 } from 'lucide-react';
-import { getPersonaColor } from '../utils/persona';
+import { ArrowLeft, User } from 'lucide-react';
 import { getDeviceSpecGroups } from '../data/specSchema';
-import ImageWithFallback from './common/ImageWithFallback';
-import ActionButton from './device-detail/ActionButton';
+import DetailHeader from './device-detail/DetailHeader';
+import DetailHeroImage from './device-detail/DetailHeroImage';
+import DetailActions from './device-detail/DetailActions';
+import DetailBasketSection from './device-detail/DetailBasketSection';
 import SpecGroup from './device-detail/SpecGroup';
-import BasketItemTag from './device-detail/BasketItemTag';
 import { TooltipContext } from './device-detail/TooltipContext';
-
-
 
 const DeviceDetail = ({ device, onBack }) => {
   const [activeTooltipId, setActiveTooltipId] = useState(null);
@@ -19,23 +17,6 @@ const DeviceDetail = ({ device, onBack }) => {
   }, [device]);
 
   if (!device) return null;
-
-
-  const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
-
-  const copyToClipboard = (text) => {
-    if (text) navigator.clipboard.writeText(text);
-  };
-
-  const openLink = (url) => {
-    let link = url;
-    if (link && !link.startsWith('http')) {
-      link = 'https://' + link;
-    }
-    if (link) window.open(link, '_blank');
-  };
-
-  const barcodeSrc = device.SKU ? `/barcodes/${device.SKU.replace(/[^a-zA-Z0-9_-]/g, '')}.png` : null;
 
   return (
     <TooltipContext.Provider value={{ activeTooltipId, setActiveTooltipId }}>
@@ -52,74 +33,11 @@ const DeviceDetail = ({ device, onBack }) => {
         }}
       >
         <div className="container content-area">
-          <div className="detail-header-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <div>
-                <h2 className="detail-header-title">{device['Device Name']}</h2>
-                <div className="detail-header-subtitle">{device.Formfactor || device['OEM (brand)']}</div>
-              </div>
-              {device.Persona && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                  {device.Persona.split(',').map((p, i) => (
-                    <span key={i} className="persona-tag" style={{ backgroundColor: getPersonaColor(p) }}>
-                      {p.trim()}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <DetailHeader device={device} />
 
-          <div className="detail-image-card">
-            <ImageWithFallback 
-              src={device['Device Image']} 
-              alt={device['Device Name']} 
-              isLaptop={isLaptop} 
-              size={120}
-              className="detail-large-image"
-              loading="eager"
-              style={{ height: 'auto', maxHeight: '280px' }}
-            />
-            {barcodeSrc && (
-              <img 
-                src={barcodeSrc} 
-                alt="Barcode" 
-                className="detail-barcode" 
-                loading="lazy" 
-                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
-              />
-            )}
-          </div>
+          <DetailHeroImage device={device} />
 
-          <div className="action-buttons-row">
-            <ActionButton 
-              icon={Copy} 
-              label="SKU" 
-              successLabel="SKU Copied!" 
-              onClick={() => copyToClipboard(device.SKU)} 
-            />
-            <ActionButton 
-              icon={Copy} 
-              label="UPC" 
-              successLabel="UPC Copied!" 
-              onClick={() => copyToClipboard(device.UPC)} 
-            />
-            <ActionButton 
-              icon={Globe} 
-              label="Bestbuy.com" 
-              successLabel="Opening..." 
-              onClick={() => openLink(device['Device Online Listing'])} 
-            />
-            <ActionButton 
-              icon={Share2} 
-              label="Share Link" 
-              successLabel="Link Copied!" 
-              onClick={() => {
-                const shareUrl = `${window.location.origin}${window.location.pathname}?sku=${encodeURIComponent(device.SKU)}`;
-                copyToClipboard(shareUrl);
-              }} 
-            />
-          </div>
+          <DetailActions device={device} />
 
           <div className="specs-grid">
             {device['Persona Extended'] && (
@@ -134,22 +52,7 @@ const DeviceDetail = ({ device, onBack }) => {
               </div>
             )}
 
-            {device['Basket Recommendations'] && (
-              <div className="specs-card" style={{ height: '100%' }}>
-                <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <ShoppingBag size={20} style={{ color: 'var(--text-secondary)' }} />
-                  <span>Basket Recommendations</span>
-                </h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem', marginBottom: '0.75rem' }}>
-                  Tap any item to see why it fits this device and who looks for it.
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  {device['Basket Recommendations'].split(',').map((item, idx) => (
-                    <BasketItemTag key={idx} item={item.trim()} />
-                  ))}
-                </div>
-              </div>
-            )}
+            <DetailBasketSection recommendations={device['Basket Recommendations']} />
 
             {specGroups.map((group, idx) => (
               <SpecGroup 

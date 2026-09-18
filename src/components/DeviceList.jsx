@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Filter, Search } from 'lucide-react';
 import FilterModal from './FilterModal';
 import DeviceCard from './DeviceCard';
+import QuizBanner from './quiz/QuizBanner';
+import { filterDevices } from '../utils/filterDevices';
 
 const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleComparison, onOpenQuiz }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -47,50 +49,7 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
 
   // Filter devices based on activeFilters and searchQuery
   const filteredDevices = useMemo(() => {
-    return devices.filter(device => {
-      // 1. Search Query Filter
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const nameMatch = device['Device Name']?.toLowerCase()?.includes(query);
-        const skuMatch = device.SKU?.toLowerCase()?.includes(query);
-        const processorMatch = device.Processor?.toLowerCase()?.includes(query);
-        const brandMatch = device['OEM (brand)']?.toLowerCase()?.includes(query);
-        const personaMatch = device.Persona?.toLowerCase()?.includes(query);
-        
-        if (!nameMatch && !skuMatch && !processorMatch && !brandMatch && !personaMatch) {
-          return false;
-        }
-      }
-
-      // 2. Active Category Filters
-      for (const [key, selectedValues] of Object.entries(activeFilters)) {
-        if (key === 'priceRange') {
-          const price = Number(device.MSRP?.replace(/[^0-9.]/g, '') || 0);
-          if (price < selectedValues[0] || price > selectedValues[1]) {
-            return false;
-          }
-          continue;
-        }
-        if (!selectedValues || selectedValues.length === 0) continue;
-
-        if (key === 'Device') {
-          const deviceVal = (device.Device || '').toLowerCase().replace(/s$/, '');
-          const matches = selectedValues.some(val => {
-            const v = val.toLowerCase().replace(/s$/, '');
-            if (v.includes('google') && (deviceVal.includes('google') || deviceVal.includes('graggle'))) return true;
-            if (v.includes('chrome') && (deviceVal.includes('chrome') || deviceVal.includes('chromer'))) return true;
-            return deviceVal.includes(v) || v.includes(deviceVal);
-          });
-          if (!matches) return false;
-          continue;
-        }
-
-        if (!selectedValues.includes(device[key])) {
-          return false;
-        }
-      }
-      return true;
-    });
+    return filterDevices(devices, activeFilters, searchQuery);
   }, [devices, activeFilters, searchQuery]);
 
   // Group filtered devices by OEM and extract brands, memoized
@@ -218,40 +177,7 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
       </div>
 
       {/* Quiz Prompt Banner */}
-      {onOpenQuiz && (
-        <div className="quiz-banner">
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '1.75rem' }}>✨</span>
-            <div>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.15rem' }}>
-                Find Your Googlebook
-              </h4>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                Answer 3 quick questions to discover the perfect model matching your budget & needs.
-              </p>
-            </div>
-          </div>
-          <button 
-            className="btn-primary" 
-            onClick={onOpenQuiz}
-            style={{ 
-              padding: '0.5rem 1rem', 
-              fontSize: '0.85rem', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.25rem',
-              borderRadius: '1rem',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            <span>Take Quiz</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-        </div>
-      )}
+      <QuizBanner onOpenQuiz={onOpenQuiz} />
 
       {brands.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>

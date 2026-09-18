@@ -1,0 +1,350 @@
+/* Card Styles and Glow Effects */
+.card-wrapper {
+  position: relative;
+  border-radius: 1rem;
+  transition: box-shadow 0.2s ease;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  z-index: 1; /* create stacking context */
+  height: 100%;
+}
+
+.card-wrapper:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-glow-mask {
+  position: absolute;
+  inset: 0; /* Exactly match the card's dimensions */
+  border-radius: 1rem;
+  padding: 4px; /* The thickness of the glowing border line */
+  /* Punch a hole in the center so it's just a 4px border */
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  /* Blur this 4px border, creating a perfect drop shadow that perfectly hugs the corners */
+  filter: blur(10px); 
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.card-glow-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250%; /* Giant spinning square */
+  aspect-ratio: 1;
+  background: conic-gradient(from 0deg, #4285F4, #EA4335, #FBBC04, #34A853, #4285F4);
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.card-wrapper:hover .card-glow-mask {
+  opacity: 1; /* Increase opacity to compensate for the mask and blur */
+}
+
+.card-wrapper:hover .card-glow-spinner {
+  animation: spin-centered 3s linear infinite;
+}
+
+@keyframes spin-centered {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.card {
+  position: relative;
+  z-index: 2; /* create stacking context above glow */
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 1rem;
+  padding: calc(1rem + 1px); /* Add 1px to compensate for lost border to avoid layout shift */
+  overflow: hidden; /* Trap the spinning ::before inside the card */
+  height: 100%;
+}
+
+/* The solid background and default border */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  z-index: -1;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+/* On hover, shrink the inner mask to reveal the spinning gradient */
+.card-wrapper:hover .card::after {
+  background-color: var(--surface-hover);
+  border-color: transparent;
+  inset: 2px; /* 2px thick animated border */
+  border-radius: calc(1rem - 2px);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250%; /* Match glow spinner */
+  aspect-ratio: 1;
+  background: conic-gradient(from 0deg, #4285F4, #EA4335, #FBBC04, #34A853, #4285F4);
+  z-index: -2;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.card-wrapper:hover .card::before {
+  opacity: 1;
+  animation: spin-centered 3s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.card-spotlight {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-spotlight {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    background: radial-gradient(
+      600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 255, 255, 0.4),
+      transparent 40%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .dark .card-spotlight {
+    background: radial-gradient(
+      600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(255, 255, 255, 0.08),
+      transparent 40%
+    );
+  }
+
+  .card-wrapper:hover .card-spotlight {
+    opacity: 1;
+  }
+}
+
+/* Device List Grid */
+.device-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .device-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .device-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Device Card Details */
+.device-card-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.device-card-image-placeholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 0.75rem;
+  background-color: var(--surface-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.device-card-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.device-card-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.device-card-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.125rem;
+}
+
+.device-card-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: var(--accent-color);
+  color: white;
+  margin-top: 0.5rem;
+  width: fit-content;
+}
+
+.persona-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ffffff !important;
+  margin-top: 0.35rem;
+  width: fit-content;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* Vertical Card Layout for Grouped Brands */
+.device-card-content-vertical {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.device-card-image-large {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  padding: 1rem;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.device-card-image-large img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.device-card-info-vertical {
+  padding: 1rem 0.5rem 0.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.device-brand-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.device-title-text {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.device-sku-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.brand-section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  text-transform: capitalize;
+}
+
+/* Mobile Adjustments for 3-column layout */
+@media (max-width: 768px) {
+  .device-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.5rem;
+  }
+
+  .card-wrapper, .card-glow-mask, .card {
+    min-width: 0 !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .card::after {
+    border-radius: 0.5rem !important;
+  }
+
+  .card-wrapper:hover .card::after {
+    border-radius: calc(0.5rem - 2px) !important;
+  }
+
+  .device-card-image-large {
+    height: 100px;
+    padding: 0.25rem;
+    background-color: #ffffff !important;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .device-title-text {
+    font-size: 0.9rem;
+    line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .device-brand-text {
+    font-size: 0.7rem;
+  }
+
+  .device-sku-text {
+    font-size: 0.75rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .card {
+    padding: 0.5rem !important;
+  }
+
+  .persona-tag {
+    font-size: 0.6rem !important;
+    padding: 0.15rem 0.4rem !important;
+    margin-top: 0.25rem !important;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}

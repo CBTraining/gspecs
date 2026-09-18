@@ -2,23 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-
-const FILTER_CATEGORIES = [
-  { key: 'Device', label: 'Device Type' },
-  { key: 'Persona', label: 'Persona' },
-  { key: 'OEM (brand)', label: 'Brand' },
-  { key: 'Formfactor', label: 'Form Factor' },
-  { key: 'Screen Size', label: 'Screen Size' },
-  { key: 'Storage', label: 'Storage' },
-  { key: 'RAM/Memory', label: 'RAM' },
-  { key: 'Touchscreen?', label: 'Touchscreen' },
-  { key: 'Pen Compatibility?', label: 'Pen Compatible' }
-];
-
-const parsePrice = (priceStr) => {
-  if (!priceStr) return 0;
-  return Number(priceStr.replace(/[^0-9.]/g, ''));
-};
+import { FILTER_CATEGORIES, parsePrice } from '../data/filterCategories';
 
 const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
   const [localFilters, setLocalFilters] = useState(activeFilters || {});

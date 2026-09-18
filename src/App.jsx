@@ -1,18 +1,19 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Moon, Sun, Laptop, ArrowLeft, BookOpen, Trash2, GitCompare, X, Smartphone, Scan, TrendingUp } from 'lucide-react';
 import { fetchDeviceData } from './utils/fetchData';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+import { useTheme } from './hooks/useTheme';
 
+import Header from './components/layout/Header';
+import BottomNav from './components/layout/BottomNav';
+import CompareBar from './components/comparison/CompareBar';
 import DeviceList from './components/DeviceList';
 import DeviceDetail from './components/DeviceDetail';
-
 
 const GlossaryView = lazy(lazyWithRetry(() => import('./components/GlossaryView')));
 const CompareModal = lazy(lazyWithRetry(() => import('./components/CompareModal')));
 const QuizModal = lazy(lazyWithRetry(() => import('./components/QuizModal')));
 const StepUpChart = lazy(lazyWithRetry(() => import('./components/StepUpChart')));
-
 
 const pageTransitionVariants = {
   initial: {
@@ -47,8 +48,8 @@ function App() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('devices'); // 'devices' | 'stepup' | 'glossary'
 
+  const { theme, toggleTheme } = useTheme();
 
-  
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSelectedDevice(null);
@@ -75,37 +76,6 @@ function App() {
 
   const clearComparison = () => {
     setComparisonDevices([]);
-  };
-  
-  // Theme state: load from localStorage, fallback to system preference
-  const [theme, setTheme] = useState(() => {
-    try {
-      const savedTheme = localStorage.getItem('gspecs_theme');
-      if (savedTheme === 'light' || savedTheme === 'dark') {
-        return savedTheme;
-      }
-    } catch {
-      // ignore
-    }
-    
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    return 'light';
-  });
-
-  useEffect(() => {
-    // Apply theme to document body and save to localStorage
-    if (theme === 'dark') {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
-    localStorage.setItem('gspecs_theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
   useEffect(() => {
@@ -155,74 +125,14 @@ function App() {
 
   return (
     <div className="app-container">
-
-      <header className="app-header" style={{ zIndex: 150 }}>
-        <div className="app-header-content">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <AnimatePresence>
-              {selectedDevice && (
-                <motion.button 
-                  initial={{ opacity: 0, scale: 0.8, width: 0 }}
-                  animate={{ opacity: 1, scale: 1, width: 'auto' }}
-                  exit={{ opacity: 0, scale: 0.8, width: 0 }}
-                  className="btn-icon" 
-                  onClick={() => setSelectedDevice(null)} 
-                  aria-label="Go Back"
-                  style={{ padding: 0 }}
-                >
-                  <ArrowLeft size={28} />
-                </motion.button>
-              )}
-            </AnimatePresence>
-            
-            <div className="app-title">
-              <img 
-                src={theme === 'dark' ? `${import.meta.env.BASE_URL}gspecs_light.svg` : `${import.meta.env.BASE_URL}gspecs_dark.svg`} 
-                alt="G-Specs" 
-                style={{ height: '28px' }} 
-              />
-            </div>
-          </div>
-
-          <nav className="desktop-nav">
-            <div 
-              className={`nav-item ${activeTab === 'devices' ? 'active' : ''}`}
-              onClick={() => handleTabChange('devices')}
-            >
-              <Laptop size={20} />
-              <span>Devices</span>
-            </div>
-            <div 
-              className={`nav-item ${activeTab === 'stepup' ? 'active' : ''}`}
-              onClick={() => handleTabChange('stepup')}
-            >
-              <TrendingUp size={20} />
-              <span>Step Up</span>
-            </div>
-            <div 
-              className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`}
-              onClick={() => handleTabChange('glossary')}
-            >
-              <BookOpen size={20} />
-              <span>Glossary</span>
-            </div>
-          </nav>
-
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <button 
-              className="btn-icon" 
-              onClick={() => alert('Barcode Scanner not developed yet.')} 
-              aria-label="Scan Barcode"
-              style={{ marginRight: '0.25rem' }}
-            >
-              <Scan size={24} />
-            </button>
-            <button className="btn-icon" onClick={toggleTheme} aria-label="Toggle Theme">
-              {theme === 'light' ? <Moon size={24} /> : <Sun size={24} />}
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header 
+        selectedDevice={selectedDevice}
+        onBack={() => setSelectedDevice(null)}
+        theme={theme}
+        toggleTheme={toggleTheme}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
       <motion.div 
         className="main-layout"
@@ -234,7 +144,6 @@ function App() {
         transition={{ duration: 0.2, ease: "easeInOut" }}
         style={{ pointerEvents: selectedDevice ? 'none' : 'auto', paddingTop: '4rem' }}
       >
-        
         <main className="container content-area">
           {loading ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
@@ -274,7 +183,6 @@ function App() {
             </AnimatePresence>
           )}
         </main>
-
       </motion.div>
 
       <AnimatePresence>
@@ -290,90 +198,12 @@ function App() {
       {/* Floating Comparison Bar */}
       <AnimatePresence>
         {comparisonDevices.length > 0 && !selectedDevice && activeTab !== 'glossary' && (
-          <motion.div
-            className="compare-bar"
-            initial={{ y: 100, x: '-50%', opacity: 0 }}
-            animate={{ y: 0, x: '-50%', opacity: 1 }}
-            exit={{ y: 100, x: '-50%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          >
-            {/* Thumbnails list */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {comparisonDevices.map(device => {
-                const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
-                return (
-                  <div 
-                    key={device.SKU} 
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '0.4rem',
-                      backgroundColor: 'var(--surface-color)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '1.5rem',
-                      padding: '0.25rem 0.6rem',
-                      fontSize: '0.8rem',
-                      fontWeight: '500'
-                    }}
-                  >
-                    <div style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {device['Device Image'] ? (
-                        <img 
-                          src={device['Device Image']} 
-                          alt="" 
-                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        isLaptop ? <Laptop size={14} /> : <Smartphone size={14} />
-                      )}
-                    </div>
-                    <span style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {device['Device Name']}
-                    </span>
-                    <button 
-                      onClick={() => toggleComparison(device)}
-                      style={{ 
-                        background: 'none', 
-                        border: 'none', 
-                        padding: 0, 
-                        color: 'var(--text-secondary)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}
-                      aria-label="Remove from compare"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Actions */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <button 
-                onClick={clearComparison}
-                className="btn-secondary"
-                style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.25rem', borderRadius: '1rem' }}
-              >
-                <Trash2 size={14} />
-                <span>Clear</span>
-              </button>
-              <button 
-                onClick={() => setIsComparing(true)}
-                className="btn-primary"
-                style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.25rem', borderRadius: '1rem' }}
-                disabled={comparisonDevices.length < 2}
-              >
-                <GitCompare size={14} />
-                <span>Compare ({comparisonDevices.length})</span>
-              </button>
-            </div>
-          </motion.div>
+          <CompareBar 
+            comparisonDevices={comparisonDevices}
+            onToggleComparison={toggleComparison}
+            onClear={clearComparison}
+            onCompare={() => setIsComparing(true)}
+          />
         )}
       </AnimatePresence>
 
@@ -398,32 +228,9 @@ function App() {
         )}
       </Suspense>
 
-      <nav className="bottom-nav" style={{ zIndex: 150 }}>
-        <div 
-          className={`nav-item ${activeTab === 'devices' ? 'active' : ''}`} 
-          onClick={() => handleTabChange('devices')}
-        >
-          <Laptop size={24} />
-          <span>Devices</span>
-        </div>
-        <div 
-          className={`nav-item ${activeTab === 'stepup' ? 'active' : ''}`} 
-          onClick={() => handleTabChange('stepup')}
-        >
-          <TrendingUp size={24} />
-          <span>Step Up</span>
-        </div>
-        <div 
-          className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`} 
-          onClick={() => handleTabChange('glossary')}
-        >
-          <BookOpen size={24} />
-          <span>Glossary</span>
-        </div>
-      </nav>
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 }
 
 export default App;
-

@@ -1,9 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, ArrowLeft, RefreshCw, Laptop, Smartphone, Battery, Monitor } from 'lucide-react';
+import { X, Sparkles, ArrowLeft } from 'lucide-react';
 import { calculateRecommendations } from '../utils/quizScoring';
-import QuizResultCard from './quiz/QuizResultCard';
+import QuizStepPersona from './quiz/QuizStepPersona';
+import QuizStepBudget from './quiz/QuizStepBudget';
+import QuizStepPortability from './quiz/QuizStepPortability';
+import QuizStepFeatures from './quiz/QuizStepFeatures';
+import QuizStepResults from './quiz/QuizStepResults';
 
 const stepVariants = {
   enter: (direction) => ({
@@ -26,8 +30,8 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
   const [answers, setAnswers] = useState({
     persona: '',
     budget: Infinity,
-    portabilityVsScreen: '', // 'portability' or 'large-screen'
-    touchVsBattery: '' // 'touch' or 'battery'
+    portabilityVsScreen: '',
+    touchVsBattery: ''
   });
 
   useEffect(() => {
@@ -71,7 +75,6 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
     setStep(s => s - 1);
   };
 
-  // Calculate top recommendations based on answers
   const recommendations = useMemo(() => {
     if (step !== 5) return [];
     return calculateRecommendations(devices, answers);
@@ -155,272 +158,29 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
                   exit="exit"
                   transition={{ duration: 0.25, ease: 'easeInOut' }}
                 >
-                  {/* STEP 1: Persona Selection */}
                   {step === 1 && (
-                    <div>
-                      <h4 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '1.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
-                        What is your primary use case?
-                      </h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {[
-                          { key: 'Everyday User', label: 'Everyday Browsing & Tasks', desc: 'Social media, email, video streaming, and casual web use.' },
-                          { key: 'Student', label: 'School & Study', desc: 'Writing papers, taking notes, reading textbooks, and research.' },
-                          { key: 'Content Creator', label: 'Content Creation & Design', desc: 'Photo editing, video production, graphic design, and rendering.' },
-                          { key: 'Professional', label: 'Office & Professional Work', desc: 'Heavy multitasking, sheets, video meetings, and business apps.' },
-                          { key: 'Gamer / Power User', label: 'Gaming & Performance', desc: 'High performance gaming, virtualization, compilation, and power tasks.' }
-                        ].map(option => (
-                          <button
-                            key={option.key}
-                            onClick={() => goForward({ ...answers, persona: option.key })}
-                            style={{
-                              textAlign: 'left',
-                              padding: '1.25rem',
-                              borderRadius: '1rem',
-                              border: '1px solid var(--border-color)',
-                              backgroundColor: 'var(--surface-color)',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '0.25rem',
-                              outline: 'none',
-                              transition: 'transform 0.2s ease, border-color 0.2s ease'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                          >
-                            <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{option.label}</span>
-                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{option.desc}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    <QuizStepPersona onSelect={(persona) => goForward({ ...answers, persona })} />
                   )}
 
-                  {/* STEP 2: Budget */}
                   {step === 2 && (
-                    <div>
-                      <h4 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '1.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
-                        What is your budget limit?
-                      </h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {[
-                          { value: 400, label: 'Entry Level (Under $400)', desc: 'Affordable, essential features for basic needs.' },
-                          { value: 700, label: 'Mid-Range (Under $700)', desc: 'Great value, balanced performance and portability.' },
-                          { value: 1000, label: 'Premium (Under $1000)', desc: 'Higher build quality, faster chips, and beautiful screens.' },
-                          { value: Infinity, label: 'Unlimited / Premium Flagship', desc: 'No budget bounds; show me the absolute best tech.' }
-                        ].map(option => (
-                          <button
-                            key={option.value}
-                            onClick={() => goForward({ ...answers, budget: option.value })}
-                            style={{
-                              textAlign: 'left',
-                              padding: '1.25rem',
-                              borderRadius: '1rem',
-                              border: '1px solid var(--border-color)',
-                              backgroundColor: 'var(--surface-color)',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '0.25rem',
-                              outline: 'none',
-                              transition: 'transform 0.2s ease, border-color 0.2s ease'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                          >
-                            <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{option.label}</span>
-                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{option.desc}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    <QuizStepBudget onSelect={(budget) => goForward({ ...answers, budget })} />
                   )}
 
-                  {/* STEP 3: Portability vs Screen size (Qualifying) */}
                   {step === 3 && (
-                    <div>
-                      <h4 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
-                        Portability vs Screen Size
-                      </h4>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '1.5rem' }}>
-                        Which of these aspects is more important for your daily work?
-                      </p>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-                        <button
-                          onClick={() => goForward({ ...answers, portabilityVsScreen: 'portability' })}
-                          style={{
-                            textAlign: 'center',
-                            padding: '2rem 1.5rem',
-                            borderRadius: '1.25rem',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--surface-color)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            outline: 'none',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                        >
-                          <Laptop size={32} style={{ color: 'var(--accent-color)' }} />
-                          <div>
-                            <span style={{ fontWeight: '800', color: 'var(--text-primary)', display: 'block', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
-                              Ultra-Light & Portable
-                            </span>
-                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                              I am always on the go. I need a lightweight device (under 3.2 lbs) that is easy to carry all day.
-                            </span>
-                          </div>
-                        </button>
-
-                        <button
-                          onClick={() => goForward({ ...answers, portabilityVsScreen: 'large-screen' })}
-                          style={{
-                            textAlign: 'center',
-                            padding: '2rem 1.5rem',
-                            borderRadius: '1.25rem',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--surface-color)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            outline: 'none',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                        >
-                          <Monitor size={32} style={{ color: 'var(--accent-color)' }} />
-                          <div>
-                            <span style={{ fontWeight: '800', color: 'var(--text-primary)', display: 'block', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
-                              Larger Display Space
-                            </span>
-                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                              I want maximum screen real estate (14" or larger) to multitask comfortably with multiple windows open.
-                            </span>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
+                    <QuizStepPortability onSelect={(portabilityVsScreen) => goForward({ ...answers, portabilityVsScreen })} />
                   )}
 
-                  {/* STEP 4: Touchscreen vs Battery Life (Qualifying) */}
                   {step === 4 && (
-                    <div>
-                      <h4 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
-                        Touchscreen vs Battery Life
-                      </h4>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '1.5rem' }}>
-                        Choose your priority feature:
-                      </p>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-                        <button
-                          onClick={() => goForward({ ...answers, touchVsBattery: 'touch' })}
-                          style={{
-                            textAlign: 'center',
-                            padding: '2rem 1.5rem',
-                            borderRadius: '1.25rem',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--surface-color)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            outline: 'none',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                        >
-                          <Smartphone size={32} style={{ color: 'var(--accent-color)' }} />
-                          <div>
-                            <span style={{ fontWeight: '800', color: 'var(--text-primary)', display: 'block', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
-                              Touchscreen & Pen Support
-                            </span>
-                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                              I want a touch-sensitive screen or tablet convertible mode for taking notes, sketching, and drawing.
-                            </span>
-                          </div>
-                        </button>
-
-                        <button
-                          onClick={() => goForward({ ...answers, touchVsBattery: 'battery' })}
-                          style={{
-                            textAlign: 'center',
-                            padding: '2rem 1.5rem',
-                            borderRadius: '1.25rem',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--surface-color)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            outline: 'none',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-color)'}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                        >
-                          <Battery size={32} style={{ color: 'var(--accent-color)' }} />
-                          <div>
-                            <span style={{ fontWeight: '800', color: 'var(--text-primary)', display: 'block', fontSize: '1.05rem', marginBottom: '0.25rem' }}>
-                              Long-Lasting Battery
-                            </span>
-                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                              I need all-day battery life (11+ hours) so I don't have to carry a charger or hunt for outlets.
-                            </span>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
+                    <QuizStepFeatures onSelect={(touchVsBattery) => goForward({ ...answers, touchVsBattery })} />
                   )}
 
-                  {/* STEP 5: Results screen */}
                   {step === 5 && (
-                    <div>
-                      <h4 style={{ fontSize: '1.3rem', fontWeight: '800', marginBottom: '0.5rem', textAlign: 'center', color: 'var(--text-primary)' }}>
-                        Recommended Googlebooks
-                      </h4>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem', textAlign: 'center' }}>
-                        Based on your requirements, here are the best matches:
-                      </p>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {recommendations.map(({ device, matchPercentage }) => (
-                          <QuizResultCard
-                            key={device.SKU}
-                            device={device}
-                            matchPercentage={matchPercentage}
-                            onSelectDevice={onSelectDevice}
-                            onClose={onClose}
-                          />
-                        ))}
-
-                        {recommendations.length === 0 && (
-                          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-                            <p>No perfect matches found. Try widening your budget or changing priorities.</p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2.5rem' }}>
-                        <button 
-                          className="btn-secondary" 
-                          onClick={handleReset}
-                          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '1.5rem', padding: '0.6rem 1.2rem' }}
-                        >
-                          <RefreshCw size={16} />
-                          <span>Retake Quiz</span>
-                        </button>
-                      </div>
-                    </div>
+                    <QuizStepResults 
+                      recommendations={recommendations}
+                      onSelectDevice={onSelectDevice}
+                      onClose={onClose}
+                      onReset={handleReset}
+                    />
                   )}
                 </motion.div>
               </AnimatePresence>
