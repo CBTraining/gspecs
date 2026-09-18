@@ -8,6 +8,19 @@ const CACHE_KEY = `gspecs_devices_cache_${appVersion}`;
 const ACCESSORIES_CACHE_KEY = `gspecs_accessories_cache_${appVersion}`;
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
+// Clean up previous version caches from localStorage
+try {
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (key.startsWith('gspecs_devices_cache_') || key.startsWith('gspecs_accessories_cache_'))) {
+      if (key !== CACHE_KEY && key !== ACCESSORIES_CACHE_KEY) {
+        localStorage.removeItem(key);
+      }
+    }
+  }
+} catch {
+  // Ignore localStorage access issues
+}
 
 const convertDriveLink = (url, deviceName) => {
   if (!url) return url;
@@ -30,12 +43,16 @@ const convertDriveLink = (url, deviceName) => {
 
 export const fetchAccessoriesData = () => {
   try {
-    const cached = sessionStorage.getItem(ACCESSORIES_CACHE_KEY);
+    const cached = localStorage.getItem(ACCESSORIES_CACHE_KEY);
     if (cached) {
       const { timestamp, data } = JSON.parse(cached);
       if (Date.now() - timestamp < CACHE_TTL_MS && data && typeof data === 'object') {
         setDynamicBasketDetails(data);
         return Promise.resolve(data);
+      }
+      if (data && typeof data === 'object') {
+        // Stale data available, use it immediately and revalidate in background
+        setDynamicBasketDetails(data);
       }
     }
   } catch {
@@ -64,7 +81,7 @@ export const fetchAccessoriesData = () => {
         }
 
         try {
-          sessionStorage.setItem(ACCESSORIES_CACHE_KEY, JSON.stringify({
+          localStorage.setItem(ACCESSORIES_CACHE_KEY, JSON.stringify({
             timestamp: Date.now(),
             data: details
           }));
@@ -82,24 +99,36 @@ export const fetchAccessoriesData = () => {
   });
 };
 
-export const fetchDeviceData = () => {
+export const fetchDeviceData = (onBackgroundUpdate) => {
   // Concurrently fetch accessory data in background
   fetchAccessoriesData().catch(() => {});
 
-  // Check sessionStorage cache first
+  let staleData = null;
+  let isCacheFresh = false;
+
+  // Check localStorage cache first
   try {
-    const cached = sessionStorage.getItem(CACHE_KEY);
+    const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
       const { timestamp, data } = JSON.parse(cached);
-      if (Date.now() - timestamp < CACHE_TTL_MS && Array.isArray(data) && data.length > 0) {
-        return Promise.resolve(data);
+      if (Array.isArray(data) && data.length > 0) {
+        staleData = data;
+        if (Date.now() - timestamp < CACHE_TTL_MS) {
+          isCacheFresh = true;
+        }
       }
     }
   } catch {
-    // Ignore storage parse errors and proceed to fresh fetch
+    // Ignore storage parse errors
   }
 
-  return new Promise((resolve, reject) => {
+  // If cache is fresh, resolve immediately
+  if (isCacheFresh && staleData) {
+    return Promise.resolve(staleData);
+  }
+
+  // If stale cache exists, we will return it immediately via promise, but also trigger background revalidation
+  const networkFetch = new Promise((resolve, reject) => {
     Papa.parse(SHEET_URL, {
       download: true,
       header: true,
@@ -121,7 +150,7 @@ export const fetchDeviceData = () => {
           }));
 
         try {
-          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
             timestamp: Date.now(),
             data: validData
           }));
@@ -129,11 +158,29 @@ export const fetchDeviceData = () => {
           // Ignore quota errors
         }
 
+        // Notify caller if fresh data arrived after stale data was returned
+        if (staleData && onBackgroundUpdate) {
+          onBackgroundUpdate(validData);
+        }
+
         resolve(validData);
       },
       error: (error) => {
-        reject(error);
+        if (staleData) {
+          // Fall back to stale data on network error
+          resolve(staleData);
+        } else {
+          reject(error);
+        }
       }
     });
   });
+
+  // If we have stale data, resolve with it immediately for instant render, and let networkFetch run in background
+  if (staleData) {
+    networkFetch.catch(() => {});
+    return Promise.resolve(staleData);
+  }
+
+  return networkFetch;
 };

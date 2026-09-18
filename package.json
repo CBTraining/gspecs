@@ -11,7 +11,6 @@
     "sync-images": "node scripts/syncImages.js"
   },
   "dependencies": {
-    "bwip-js": "^4.11.2",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.24.0",
     "papaparse": "^5.5.4",
@@ -22,6 +21,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
+    "bwip-js": "^4.11.2",
     "oxlint": "^1.71.0",
     "sharp": "^0.35.3",
     "vite": "^8.1.1",

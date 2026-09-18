@@ -1,15 +1,18 @@
-﻿import React from 'react';
+import React, { useMemo } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { parsePrice, getUpgrades } from '../utils/stepUpLogic';
 import StepUpTierCard from './stepup/StepUpTierCard';
 
 const StepUpChart = ({ devices, onSelectDevice }) => {
-  if (!devices || devices.length === 0) return null;
-
   // Filter out any devices without valid price or SKU, then sort by price ascending
-  const sortedDevices = [...devices]
-    .filter(d => d.MSRP && d.SKU)
-    .sort((a, b) => parsePrice(a.MSRP) - parsePrice(b.MSRP));
+  const sortedDevices = useMemo(() => {
+    if (!devices || devices.length === 0) return [];
+    return [...devices]
+      .filter(d => d.MSRP && d.SKU)
+      .sort((a, b) => parsePrice(a.MSRP) - parsePrice(b.MSRP));
+  }, [devices]);
+
+  if (!devices || devices.length === 0) return null;
 
   return (
     <div style={{ padding: '0 0.5rem' }}>

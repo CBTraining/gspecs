@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import ImageWithFallback from './common/ImageWithFallback';
 import { getPersonaColor } from '../utils/persona';
@@ -11,6 +11,31 @@ export const DeviceCard = memo(({
   onSelectDevice, 
   onToggleComparison 
 }) => {
+  const rafRef = useRef(null);
+
+  const handleMouseMove = useCallback((e) => {
+    const target = e.currentTarget;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+
+    if (rafRef.current) return;
+
+    rafRef.current = requestAnimationFrame(() => {
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        target.style.setProperty('--mouse-x', `${x}px`);
+        target.style.setProperty('--mouse-y', `${y}px`);
+      }
+      rafRef.current = null;
+    });
+  }, []);
+
+  const personaTags = useMemo(() => {
+    return device.Persona ? device.Persona.split(',').map(p => p.trim()).filter(Boolean) : [];
+  }, [device.Persona]);
+
   return (
     <motion.div 
       className="card-wrapper"
@@ -23,13 +48,7 @@ export const DeviceCard = memo(({
       </div>
       <div 
         className="card"
-        onMouseMove={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
-          e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
-        }}
+        onMouseMove={handleMouseMove}
       >
         <div className="card-spotlight"></div>
         
@@ -84,11 +103,11 @@ export const DeviceCard = memo(({
               {device['Device Name']}
             </h3>
             <div className="device-sku-text">SKU: {device.SKU || 'N/A'}</div>
-            {device.Persona && (
+            {personaTags.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.2rem' }}>
-                {device.Persona.split(',').map((p, i) => (
+                {personaTags.map((p, i) => (
                   <span key={i} className="persona-tag" style={{ backgroundColor: getPersonaColor(p) }}>
-                    {p.trim()}
+                    {p}
                   </span>
                 ))}
               </div>

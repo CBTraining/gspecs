@@ -157,6 +157,7 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
         />
         <input
           type="text"
+          aria-label="Search devices"
           placeholder="Search devices by name, SKU, or specs..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

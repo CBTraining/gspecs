@@ -81,7 +81,7 @@ function App() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await fetchDeviceData();
+        const data = await fetchDeviceData((updatedData) => setDevices(updatedData));
         setDevices(data);
         setLoading(false);
 

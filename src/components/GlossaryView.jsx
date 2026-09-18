@@ -53,6 +53,7 @@ const GlossaryView = () => {
         />
         <input
           type="text"
+          aria-label="Search glossary terms"
           placeholder="Search glossary terms (e.g. OLED, NPU)..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
