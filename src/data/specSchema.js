@@ -82,7 +82,9 @@ export const INTERNAL_RESERVED_COLUMNS = new Set([
   'Barcode',
   'Persona',
   'Persona Extended',
-  'Basket Recommendations'
+  'Basket Recommendations',
+  'About',
+  'about'
 ]);
 
 /**

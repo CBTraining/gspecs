@@ -1,9 +1,29 @@
 import React from 'react';
 import { SpecText } from './SpecText';
 
+const NON_PILL_LABELS = new Set([
+  'about',
+  'description',
+  'overview',
+  'summary',
+  'notes',
+  'details',
+  'persona extended',
+  'extra features',
+  'msrp',
+  'price'
+]);
+
 const getPillItems = (val, label) => {
   if (!val || typeof val !== 'string') return null;
   const str = val.trim();
+  const normLabel = (label || '').trim().toLowerCase();
+
+  // Never split designated narrative/paragraph or price fields
+  if (NON_PILL_LABELS.has(normLabel)) return null;
+
+  // Never split full prose (e.g. sentences with punctuation followed by capital letters)
+  if (/[.!?]\s+[A-Z]/.test(str)) return null;
 
   // Never split price or numeric values like "$1,299" or "1,000"
   if (/^\$?\d{1,3}(,\d{3})+(\.\d+)?$/.test(str)) return null;
@@ -17,7 +37,6 @@ const getPillItems = (val, label) => {
   }
 
   // For multi-item category fields (Security, Ports, Build), display single items as pills too for visual consistency
-  const normLabel = (label || '').trim().toLowerCase();
   if (parts.length === 1 && (normLabel === 'security' || normLabel === 'ports' || normLabel === 'build')) {
     return parts;
   }
@@ -39,10 +58,11 @@ export const SpecGroup = ({ title, icon: Icon, items }) => {
         {validItems.map((spec, idx) => {
           const pillItems = getPillItems(spec.value, spec.label);
           const isPill = pillItems && pillItems.length > 0;
+          const isLongText = !isPill && typeof spec.value === 'string' && spec.value.length > 60;
 
           return (
             <div 
-              className={`spec-row ${isPill ? 'spec-row-multiline' : ''}`} 
+              className={`spec-row ${isPill || isLongText ? 'spec-row-multiline' : ''}`} 
               key={idx}
             >
               <span className="spec-label">
@@ -57,7 +77,10 @@ export const SpecGroup = ({ title, icon: Icon, items }) => {
                   ))}
                 </div>
               ) : (
-                <span className="spec-value">
+                <span 
+                  className="spec-value"
+                  style={isLongText ? { textAlign: 'left', maxWidth: '100%' } : undefined}
+                >
                   <SpecText text={spec.value} />
                 </span>
               )}

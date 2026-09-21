@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, User } from 'lucide-react';
+import { ArrowLeft, User, Info } from 'lucide-react';
 import { getDeviceSpecGroups } from '../data/specSchema';
 import DetailHeader from './device-detail/DetailHeader';
 import DetailHeroImage from './device-detail/DetailHeroImage';
@@ -40,6 +40,18 @@ const DeviceDetail = ({ device, onBack }) => {
           <DetailActions device={device} />
 
           <div className="specs-grid">
+            {(device['About'] || device['about']) && (
+              <div className="specs-card" style={{ height: '100%' }}>
+                <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Info size={20} style={{ color: 'var(--text-secondary)' }} />
+                  <span>About</span>
+                </h3>
+                <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                  {device['About'] || device['about']}
+                </p>
+              </div>
+            )}
+
             {device['Persona Extended'] && (
               <div className="specs-card" style={{ height: '100%' }}>
                 <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
