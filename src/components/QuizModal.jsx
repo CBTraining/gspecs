@@ -3,15 +3,13 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, ArrowLeft } from 'lucide-react';
 import { calculateRecommendations } from '../utils/quizScoring';
-import QuizStepPersona from './quiz/QuizStepPersona';
-import QuizStepBudget from './quiz/QuizStepBudget';
-import QuizStepPortability from './quiz/QuizStepPortability';
-import QuizStepFeatures from './quiz/QuizStepFeatures';
+import { QUIZ_QUESTIONS } from '../data/quizQuestions';
+import QuizQuestionStep from './quiz/QuizQuestionStep';
 import QuizStepResults from './quiz/QuizStepResults';
 
 const stepVariants = {
   enter: (direction) => ({
-    x: direction > 0 ? 100 : -100,
+    x: direction > 0 ? 80 : -80,
     opacity: 0
   }),
   center: {
@@ -19,32 +17,33 @@ const stepVariants = {
     opacity: 1
   },
   exit: (direction) => ({
-    x: direction > 0 ? -100 : 100,
+    x: direction > 0 ? -80 : 80,
     opacity: 0
   })
+};
+
+const INITIAL_ANSWERS = {
+  formfactor: '',
+  display: '',
+  ports: '',
+  platform: '',
+  security: ''
 };
 
 const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
-  const [answers, setAnswers] = useState({
-    persona: '',
-    budget: Infinity,
-    portabilityVsScreen: '',
-    touchVsBattery: ''
-  });
+  const [answers, setAnswers] = useState(INITIAL_ANSWERS);
+
+  const totalQuestions = QUIZ_QUESTIONS.length;
+  const isResultsStep = step > totalQuestions;
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setStep(1);
       setDirection(1);
-      setAnswers({
-        persona: '',
-        budget: Infinity,
-        portabilityVsScreen: '',
-        touchVsBattery: ''
-      });
+      setAnswers(INITIAL_ANSWERS);
     } else {
       document.body.style.overflow = '';
     }
@@ -56,12 +55,7 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
   const handleReset = () => {
     setDirection(-1);
     setStep(1);
-    setAnswers({
-      persona: '',
-      budget: Infinity,
-      portabilityVsScreen: '',
-      touchVsBattery: ''
-    });
+    setAnswers(INITIAL_ANSWERS);
   };
 
   const goForward = (nextAnswers) => {
@@ -76,9 +70,11 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
   };
 
   const recommendations = useMemo(() => {
-    if (step !== 5) return [];
+    if (!isResultsStep) return [];
     return calculateRecommendations(devices, answers);
-  }, [step, devices, answers]);
+  }, [isResultsStep, devices, answers]);
+
+  const currentQuestion = QUIZ_QUESTIONS[step - 1];
 
   const modalContent = (
     <AnimatePresence>
@@ -99,7 +95,7 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             onClick={e => e.stopPropagation()}
             style={{ 
-              maxWidth: '650px', 
+              maxWidth: '680px', 
               borderRadius: '2rem 2rem 0 0',
               display: 'flex',
               flexDirection: 'column'
@@ -108,7 +104,7 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
             {/* Header */}
             <div className="filter-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {step > 1 && step < 5 && (
+                {step > 1 && !isResultsStep && (
                   <button 
                     className="btn-icon" 
                     onClick={goBackward}
@@ -119,7 +115,7 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
                   </button>
                 )}
                 <Sparkles size={22} style={{ color: 'var(--accent-color)' }} />
-                <span>Find Your Googlebook</span>
+                <span style={{ fontWeight: 700 }}>Find Your Googlebook</span>
               </div>
               <button className="btn-icon" onClick={onClose} aria-label="Close modal">
                 <X size={24} />
@@ -127,19 +123,20 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
             </div>
 
             {/* Quiz Body */}
-            <div style={{ flex: 1, padding: '2rem 1.5rem', overflowY: 'auto', position: 'relative' }}>
+            <div style={{ flex: 1, padding: '1.75rem 1.5rem', overflowY: 'auto', position: 'relative' }}>
               
-              {/* Step Indicators */}
-              {step < 5 && (
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
-                  {[1, 2, 3, 4].map(s => (
+              {/* Step Progress Indicators */}
+              {!isResultsStep && (
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', marginBottom: '2rem' }}>
+                  {QUIZ_QUESTIONS.map(q => (
                     <div 
-                      key={s} 
+                      key={q.id} 
                       style={{
-                        width: '40px',
-                        height: '6px',
+                        flex: 1,
+                        maxWidth: '55px',
+                        height: '5px',
                         borderRadius: '3px',
-                        backgroundColor: s <= step ? 'var(--accent-color)' : 'var(--border-color)',
+                        backgroundColor: q.stepNumber <= step ? 'var(--accent-color)' : 'var(--border-color)',
                         transition: 'background-color 0.3s ease'
                       }}
                     />
@@ -156,25 +153,16 @@ const QuizModal = ({ isOpen, onClose, devices = [], onSelectDevice }) => {
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  transition={{ duration: 0.22, ease: 'easeInOut' }}
                 >
-                  {step === 1 && (
-                    <QuizStepPersona onSelect={(persona) => goForward({ ...answers, persona })} />
+                  {!isResultsStep && currentQuestion && (
+                    <QuizQuestionStep
+                      question={currentQuestion}
+                      onSelect={(val) => goForward({ ...answers, [currentQuestion.id]: val })}
+                    />
                   )}
 
-                  {step === 2 && (
-                    <QuizStepBudget onSelect={(budget) => goForward({ ...answers, budget })} />
-                  )}
-
-                  {step === 3 && (
-                    <QuizStepPortability onSelect={(portabilityVsScreen) => goForward({ ...answers, portabilityVsScreen })} />
-                  )}
-
-                  {step === 4 && (
-                    <QuizStepFeatures onSelect={(touchVsBattery) => goForward({ ...answers, touchVsBattery })} />
-                  )}
-
-                  {step === 5 && (
+                  {isResultsStep && (
                     <QuizStepResults 
                       recommendations={recommendations}
                       onSelectDevice={onSelectDevice}

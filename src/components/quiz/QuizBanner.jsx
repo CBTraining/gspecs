@@ -12,7 +12,7 @@ const QuizBanner = ({ onOpenQuiz }) => {
             Find Your Googlebook
           </h4>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            Answer 3 quick questions to discover the perfect model matching your budget & needs.
+            Compare ports, screen size, color accuracy, and battery to find your ideal Googlebook match.
           </p>
         </div>
       </div>
