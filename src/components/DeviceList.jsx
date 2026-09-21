@@ -181,11 +181,19 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
       <QuizBanner onOpenQuiz={onOpenQuiz} />
 
       {brands.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-          <p>No devices found matching your filters.</p>
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '4rem 1.5rem', 
+          color: 'var(--text-secondary)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '1.5rem'
+        }}>
+          <p style={{ fontSize: '1.05rem', margin: 0 }}>No devices found matching your filters.</p>
           <button 
             className="btn-primary" 
-            style={{ marginTop: '1rem', margin: '0 auto' }} 
             onClick={() => {
               setActiveFilters({});
               setSearchQuery('');

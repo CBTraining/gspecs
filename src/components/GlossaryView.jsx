@@ -75,11 +75,19 @@ const GlossaryView = () => {
 
       {/* Glossary Content */}
       {!hasResults ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-          <p>No glossary terms found matching "{searchQuery}".</p>
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '4rem 1.5rem', 
+          color: 'var(--text-secondary)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '1.5rem'
+        }}>
+          <p style={{ fontSize: '1.05rem', margin: 0 }}>No glossary terms found matching "{searchQuery}".</p>
           <button 
             className="btn-primary" 
-            style={{ marginTop: '1rem', margin: '0 auto' }} 
             onClick={() => setSearchQuery('')}
           >
             Clear Search
