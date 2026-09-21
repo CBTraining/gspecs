@@ -3,6 +3,7 @@ import { Laptop, Smartphone } from 'lucide-react';
 
 export const ImageWithFallback = ({ 
   src, 
+  fallbackSrc,
   alt, 
   isLaptop = true, 
   size = 32, 
@@ -10,13 +11,23 @@ export const ImageWithFallback = ({
   style = {},
   loading = 'lazy'
 }) => {
+  const [currentSrc, setCurrentSrc] = useState(src);
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    setCurrentSrc(src);
     setError(false);
   }, [src]);
 
-  if (!src || error) {
+  const handleError = () => {
+    if (fallbackSrc && currentSrc !== fallbackSrc) {
+      setCurrentSrc(fallbackSrc);
+    } else {
+      setError(true);
+    }
+  };
+
+  if (!currentSrc || error) {
     return isLaptop ? (
       <Laptop size={size} color="var(--text-secondary)" />
     ) : (
@@ -26,12 +37,12 @@ export const ImageWithFallback = ({
 
   return (
     <img
-      src={src}
+      src={currentSrc}
       alt={alt}
       loading={loading}
       decoding="async"
       className={className}
-      onError={() => setError(true)}
+      onError={handleError}
       style={{
         width: '100%',
         height: '100%',
@@ -42,6 +53,5 @@ export const ImageWithFallback = ({
     />
   );
 };
-
 
 export default ImageWithFallback;

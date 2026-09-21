@@ -92,6 +92,7 @@ export const DeviceCard = memo(({
           <div className="device-card-image-large">
             <ImageWithFallback 
               src={device['Device Image']} 
+              fallbackSrc={device['Drive Thumbnail']}
               alt={device['Device Name']} 
               isLaptop={isLaptop} 
               size={32} 

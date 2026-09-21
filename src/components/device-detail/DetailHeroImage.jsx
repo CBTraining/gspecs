@@ -9,6 +9,7 @@ const DetailHeroImage = ({ device }) => {
     <div className="detail-image-card">
       <ImageWithFallback 
         src={device['Device Image']} 
+        fallbackSrc={device['Drive Thumbnail']}
         alt={device['Device Name']} 
         isLaptop={isLaptop} 
         size={120}
