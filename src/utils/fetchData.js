@@ -87,6 +87,74 @@ const fetchCsvContent = async (liveUrl, fallbackUrl, validatorKeyword = '') => {
   return fallbackRes.text();
 };
 
+export const fetchGvizData = (spreadsheetId, gid = null) => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return reject(new Error('GViz JSONP requires browser environment'));
+    }
+
+    const callbackName = `gviz_cb_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+    const script = document.createElement('script');
+    let url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=responseHandler:${callbackName}&_t=${Date.now()}`;
+    if (gid) {
+      url += `&gid=${gid}`;
+    }
+
+    let isDone = false;
+    const cleanup = () => {
+      if (isDone) return;
+      isDone = true;
+      try {
+        delete window[callbackName];
+      } catch {}
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('GViz fetch timed out'));
+    }, 6000);
+
+    window[callbackName] = (response) => {
+      clearTimeout(timer);
+      cleanup();
+
+      if (!response || !response.table || !Array.isArray(response.table.cols)) {
+        reject(new Error('Invalid GViz response format'));
+        return;
+      }
+
+      const cols = response.table.cols.map(c => c ? (c.label || '').trim() : '');
+      const rows = (response.table.rows || []).map(r => {
+        const rowObj = {};
+        if (r && Array.isArray(r.c)) {
+          r.c.forEach((cell, idx) => {
+            const colName = cols[idx];
+            if (colName) {
+              const val = cell ? (cell.f !== undefined && cell.f !== null ? cell.f : (cell.v !== undefined && cell.v !== null ? cell.v : '')) : '';
+              rowObj[colName] = String(val).trim();
+            }
+          });
+        }
+        return rowObj;
+      });
+
+      resolve(rows);
+    };
+
+    script.src = url;
+    script.onerror = () => {
+      clearTimeout(timer);
+      cleanup();
+      reject(new Error('GViz script load error'));
+    };
+
+    document.head.appendChild(script);
+  });
+};
+
 export const fetchAccessoriesData = async (forceNetwork = false) => {
   try {
     const cached = localStorage.getItem(ACCESSORIES_CACHE_KEY);
@@ -106,15 +174,21 @@ export const fetchAccessoriesData = async (forceNetwork = false) => {
   }
 
   try {
-    const csvText = await fetchCsvContent(LIVE_ACCESSORIES_URL, FALLBACK_ACCESSORIES_URL, 'Accessory');
-    const parsed = Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true
-    });
+    let rows = null;
+    try {
+      rows = await fetchGvizData(SPREADSHEET_ID, '515499313');
+    } catch {
+      const csvText = await fetchCsvContent(LIVE_ACCESSORIES_URL, FALLBACK_ACCESSORIES_URL, 'Accessory');
+      const parsed = Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true
+      });
+      rows = parsed.data;
+    }
 
     const details = {};
-    if (parsed && parsed.data) {
-      parsed.data.forEach(row => {
+    if (Array.isArray(rows)) {
+      rows.forEach(row => {
         const name = row['Accessory'] || row['accessory'] || row['Item'] || row['item'] || row['Name'] || row['name'];
         const why = row["Why it's great for the basket"] || row['Why'] || row['why'] || row['Rationale'] || row['rationale'];
         const customer = row['Who looks for this'] || row['Customer'] || row['customer'] || row['Who'] || row['who'];
@@ -173,11 +247,18 @@ export const fetchDeviceData = (onBackgroundUpdate, forceNetwork = false) => {
 
   const networkFetch = (async () => {
     try {
-      const csvText = await fetchCsvContent(LIVE_SHEET_URL, FALLBACK_SHEET_URL, 'Device');
-      const results = Papa.parse(csvText, {
-        header: true,
-        skipEmptyLines: true
-      });
+      let rawRows = null;
+      try {
+        rawRows = await fetchGvizData(SPREADSHEET_ID);
+      } catch (gvizErr) {
+        console.warn('GViz fetch failed, falling back to CSV:', gvizErr);
+        const csvText = await fetchCsvContent(LIVE_SHEET_URL, FALLBACK_SHEET_URL, 'Device');
+        const results = Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true
+        });
+        rawRows = results.data;
+      }
 
       const isDeviceActive = (row) => {
         const keys = Object.keys(row);
@@ -187,7 +268,7 @@ export const fetchDeviceData = (onBackgroundUpdate, forceNetwork = false) => {
         return String(val).trim().toUpperCase() === 'TRUE';
       };
 
-      const validData = results.data
+      const validData = (rawRows || [])
         .filter(row => row['Device Name'] && isDeviceActive(row))
         .map(row => {
           const { image, driveThumbnail } = convertDriveLink(row['Device Image'], row['Device Name']);
