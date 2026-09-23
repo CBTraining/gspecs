@@ -1,6 +1,6 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Moon, Sun, Laptop, ArrowLeft, BookOpen, Scan, TrendingUp } from 'lucide-react';
+import { Moon, Sun, Laptop, ArrowLeft, BookOpen, Scan, TrendingUp, LayoutGrid } from 'lucide-react';
 
 const Header = ({
   selectedDevice,
@@ -53,6 +53,13 @@ const Header = ({
           >
             <TrendingUp size={20} />
             <span>Step Up</span>
+          </div>
+          <div 
+            className={`nav-item ${activeTab === 'appindex' ? 'active' : ''}`}
+            onClick={() => onTabChange('appindex')}
+          >
+            <LayoutGrid size={20} />
+            <span>App Index</span>
           </div>
           <div 
             className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`}

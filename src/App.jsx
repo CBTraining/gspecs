@@ -14,6 +14,7 @@ const GlossaryView = lazy(lazyWithRetry(() => import('./components/GlossaryView'
 const CompareModal = lazy(lazyWithRetry(() => import('./components/CompareModal')));
 const QuizModal = lazy(lazyWithRetry(() => import('./components/QuizModal')));
 const StepUpChart = lazy(lazyWithRetry(() => import('./components/StepUpChart')));
+const AppIndexView = lazy(lazyWithRetry(() => import('./components/AppIndexView')));
 
 const pageTransitionVariants = {
   initial: {
@@ -170,6 +171,10 @@ function App() {
                   <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Step Up Guide...</div>}>
                     <StepUpChart devices={devices} onSelectDevice={setSelectedDevice} />
                   </Suspense>
+                ) : activeTab === 'appindex' ? (
+                  <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading App Index...</div>}>
+                    <AppIndexView />
+                  </Suspense>
                 ) : (
                   <DeviceList 
                     devices={devices} 
@@ -197,7 +202,7 @@ function App() {
 
       {/* Floating Comparison Bar */}
       <AnimatePresence>
-        {comparisonDevices.length > 0 && !selectedDevice && activeTab !== 'glossary' && (
+        {comparisonDevices.length > 0 && !selectedDevice && activeTab !== 'glossary' && activeTab !== 'appindex' && (
           <CompareBar 
             comparisonDevices={comparisonDevices}
             onToggleComparison={toggleComparison}

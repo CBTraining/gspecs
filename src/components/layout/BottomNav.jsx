@@ -1,5 +1,5 @@
 import React from 'react';
-import { Laptop, TrendingUp, BookOpen } from 'lucide-react';
+import { Laptop, TrendingUp, BookOpen, LayoutGrid } from 'lucide-react';
 
 const BottomNav = ({ activeTab, onTabChange }) => {
   return (
@@ -17,6 +17,13 @@ const BottomNav = ({ activeTab, onTabChange }) => {
       >
         <TrendingUp size={24} />
         <span>Step Up</span>
+      </div>
+      <div 
+        className={`nav-item ${activeTab === 'appindex' ? 'active' : ''}`} 
+        onClick={() => onTabChange('appindex')}
+      >
+        <LayoutGrid size={24} />
+        <span>App Index</span>
       </div>
       <div 
         className={`nav-item ${activeTab === 'glossary' ? 'active' : ''}`} 
