@@ -250,3 +250,38 @@
     padding-bottom: 2rem;
   }
 }
+
+/* Internal Warning Banner */
+.internal-warning-banner {
+  background-color: rgba(234, 67, 53, 0.08);
+  border: 1px solid rgba(234, 67, 53, 0.3);
+  color: #c5221f;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.45;
+  box-shadow: 0 1px 3px rgba(234, 67, 53, 0.08);
+}
+
+.internal-warning-banner svg {
+  flex-shrink: 0;
+  color: #d93025;
+}
+
+.dark .internal-warning-banner {
+  background-color: rgba(234, 67, 53, 0.15);
+  border-color: rgba(234, 67, 53, 0.4);
+  color: #fca5a5;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark .internal-warning-banner svg {
+  color: #f87171;
+}
+

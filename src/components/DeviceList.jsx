@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Filter, Search } from 'lucide-react';
+import { Filter, Search, AlertTriangle } from 'lucide-react';
 import FilterModal from './FilterModal';
 import DeviceCard from './DeviceCard';
 import QuizBanner from './quiz/QuizBanner';
@@ -73,6 +73,14 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
 
   return (
     <div className="container">
+      {/* Internal Warning Banner */}
+      <div className="internal-warning-banner" role="alert">
+        <AlertTriangle size={20} />
+        <span>
+          G-Specs is a utility developed for use by CSS. Please do not share with RSAs or customers, as this is an internal tool.
+        </span>
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', marginTop: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: '700' }}>Devices ({filteredDevices.length})</h2>
         
