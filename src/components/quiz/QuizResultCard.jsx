@@ -2,9 +2,10 @@ import React from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import { getPersonaColor } from '../../utils/persona';
 import ImageWithFallback from '../common/ImageWithFallback';
+import { isLaptopDevice } from '../../utils/deviceUtils';
 
 export const QuizResultCard = ({ device, matchPercentage, highlights = [], onSelectDevice, onClose }) => {
-  const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
+  const isLaptop = isLaptopDevice(device);
 
   return (
     <div 

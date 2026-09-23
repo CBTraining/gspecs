@@ -1,7 +1,6 @@
-﻿export const parsePrice = (priceStr) => {
-  if (!priceStr) return 0;
-  return parseInt(priceStr.replace(/[^0-9]/g, ''), 10) || 0;
-};
+import { parsePrice } from './formatters';
+
+export { parsePrice };
 
 export const getUpgrades = (prev, curr) => {
   if (!prev) return [];

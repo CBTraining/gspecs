@@ -1,6 +1,7 @@
-﻿import React from 'react';
+import React from 'react';
 import { Check, ArrowRight, ArrowDown, Laptop, Smartphone } from 'lucide-react';
 import { getPersonaColor } from '../../utils/persona';
+import { isLaptopDevice } from '../../utils/deviceUtils';
 
 export const StepUpTierCard = ({ 
   device, 
@@ -9,7 +10,7 @@ export const StepUpTierCard = ({
   priceDiff, 
   onSelectDevice 
 }) => {
-  const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
+  const isLaptop = isLaptopDevice(device);
 
   return (
     <>

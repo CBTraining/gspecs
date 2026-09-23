@@ -1,5 +1,7 @@
 import Papa from 'papaparse';
 import { setDynamicBasketDetails } from '../data/basketContext';
+import { resolveBarcode } from './barcode';
+import { cleanDeviceTitle } from './deviceUtils';
 
 const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
 const SPREADSHEET_ID = '1Y_xjXxEWVQpXJ-RWqRCScVWhnn4woeac9Phy-bCJXCA';
@@ -40,7 +42,7 @@ const convertDriveLink = (url, deviceName) => {
     const driveId = match[1];
     const driveThumbnail = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
     if (deviceName) {
-      const safeTitle = deviceName.replace(/[^a-zA-Z0-9 -]/g, '').trim();
+      const safeTitle = cleanDeviceTitle(deviceName);
       return {
         image: `${import.meta.env.BASE_URL}images/${safeTitle}_image.jpg`,
         driveThumbnail
@@ -183,26 +185,6 @@ export const fetchDeviceData = (onBackgroundUpdate, forceNetwork = false) => {
         const val = currentKey ? row[currentKey] : row['Current'];
         if (!val) return false;
         return String(val).trim().toUpperCase() === 'TRUE';
-      };
-
-      const resolveBarcode = (row) => {
-        let val = (row['Barcode'] || '').trim();
-        if (val.startsWith('=IMAGE') || val.startsWith('IMAGE')) {
-          const m = val.match(/IMAGE\s*\(\s*["']([^"']+)["']/i);
-          if (m && m[1]) return m[1];
-        }
-        if (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:')) {
-          return val;
-        }
-        if (val && val.toLowerCase() !== 'none') {
-          return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(val)}&code=UPCA`;
-        }
-        // Column L in Google Sheet: =IMAGE("https://barcode.tec-it.com/barcode.ashx?data=" & ENCODEURL(J2) & "&code=UPCA")
-        const code = String(row['UPC'] || row['SKU'] || '').trim();
-        if (code && code.toLowerCase() !== 'none') {
-          return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(code)}&code=UPCA`;
-        }
-        return '';
       };
 
       const validData = results.data

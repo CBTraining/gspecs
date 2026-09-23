@@ -1,3 +1,5 @@
+import { parsePrice } from './formatters';
+
 export function filterDevices(devices, activeFilters = {}, searchQuery = '') {
   const query = searchQuery.trim().toLowerCase();
   const hasQuery = query.length > 0;
@@ -37,7 +39,7 @@ export function filterDevices(devices, activeFilters = {}, searchQuery = '') {
 
     // 2. Price Range Filter
     if (hasPriceFilter) {
-      const price = Number(device.MSRP?.replace(/[^0-9.]/g, '') || 0);
+      const price = parsePrice(device.MSRP);
       if (price < minPrice || price > maxPrice) {
         return false;
       }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Laptop, Smartphone, X, Trash2, GitCompare } from 'lucide-react';
+import { isLaptopDevice } from '../../utils/deviceUtils';
 
 const CompareBar = ({
   comparisonDevices = [],
@@ -19,7 +20,7 @@ const CompareBar = ({
       {/* Thumbnails list */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
         {comparisonDevices.map(device => {
-          const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
+          const isLaptop = isLaptopDevice(device);
           return (
             <div 
               key={device.SKU} 

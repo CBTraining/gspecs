@@ -1,6 +1,7 @@
 import React from 'react';
 import { Laptop, Smartphone } from 'lucide-react';
 import { SPEC_ROWS } from '../../data/compareFields';
+import { isLaptopDevice } from '../../utils/deviceUtils';
 
 const CompareTable = ({ devices }) => {
   return (
@@ -19,7 +20,7 @@ const CompareTable = ({ devices }) => {
             Device Details
           </th>
           {devices.map(device => {
-            const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
+            const isLaptop = isLaptopDevice(device);
             return (
               <th 
                 key={device.SKU} 

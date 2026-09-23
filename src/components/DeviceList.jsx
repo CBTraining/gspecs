@@ -5,6 +5,7 @@ import FilterModal from './FilterModal';
 import DeviceCard from './DeviceCard';
 import QuizBanner from './quiz/QuizBanner';
 import { filterDevices } from '../utils/filterDevices';
+import { isLaptopDevice } from '../utils/deviceUtils';
 
 const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleComparison, onOpenQuiz }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -221,7 +222,7 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
               transition={{ duration: 0.3 }}
             >
               {groupedDevices[brand].map((device) => {
-                const isLaptop = device.Formfactor?.toLowerCase().includes('clamshell') || device.Formfactor?.toLowerCase().includes('convertible');
+                const isLaptop = isLaptopDevice(device);
                 const isSelectedForCompare = comparisonDevices.some(d => d.SKU === device.SKU);
 
                 return (

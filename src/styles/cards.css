@@ -107,10 +107,6 @@
   animation: spin-centered 3s linear infinite;
 }
 
-@keyframes spin {
-  100% { transform: rotate(360deg); }
-}
-
 .card-spotlight {
   display: none;
 }

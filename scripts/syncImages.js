@@ -5,6 +5,8 @@ import https from 'https';
 import Papa from 'papaparse';
 import bwipjs from 'bwip-js';
 import sharp from 'sharp';
+import { resolveBarcode } from '../src/utils/barcode.js';
+import { cleanDeviceTitle, cleanSku } from '../src/utils/deviceUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -131,26 +133,6 @@ const generateBarcode = async (code, filepath) => {
   });
 };
 
-const resolveBarcode = (row) => {
-  let val = (row['Barcode'] || '').trim();
-  if (val.startsWith('=IMAGE') || val.startsWith('IMAGE')) {
-    const m = val.match(/IMAGE\s*\(\s*["']([^"']+)["']/i);
-    if (m && m[1]) return m[1];
-  }
-  if (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:')) {
-    return val;
-  }
-  if (val && val.toLowerCase() !== 'none') {
-    return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(val)}&code=UPCA`;
-  }
-  // Column L formula in Google Sheet: =IMAGE("https://barcode.tec-it.com/barcode.ashx?data=" & ENCODEURL(J2) & "&code=UPCA")
-  const code = String(row['UPC'] || row['SKU'] || '').trim();
-  if (code && code.toLowerCase() !== 'none') {
-    return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(code)}&code=UPCA`;
-  }
-  return '';
-};
-
 const syncImages = async () => {
   console.log('Fetching Google Sheet...');
   const publicDir = path.join(__dirname, '../public');
@@ -221,7 +203,7 @@ const syncImages = async () => {
           
           // Generate/download Column L barcode
           if (sku && barcodeCode) {
-            const barcodePath = path.join(BARCODES_DIR, `${sku.replace(/[^a-zA-Z0-9_-]/g, '')}.png`);
+            const barcodePath = path.join(BARCODES_DIR, `${cleanSku(sku)}.png`);
             await generateBarcode(barcodeCode, barcodePath);
           }
 
@@ -229,7 +211,7 @@ const syncImages = async () => {
           if (!imageVal) continue;
           const driveId = extractDriveId(imageVal);
           if (driveId) {
-            const safeTitle = row['Device Name'].replace(/[^a-zA-Z0-9 -]/g, '').trim();
+            const safeTitle = cleanDeviceTitle(row['Device Name']);
             const filename = `${safeTitle}_image.jpg`;
             const filepath = path.join(IMAGES_DIR, filename);
             

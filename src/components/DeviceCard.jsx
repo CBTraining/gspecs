@@ -2,15 +2,17 @@ import React, { memo, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import ImageWithFallback from './common/ImageWithFallback';
 import { getPersonaColor } from '../utils/persona';
+import { isLaptopDevice } from '../utils/deviceUtils';
 
 export const DeviceCard = memo(({ 
   device, 
   brand, 
-  isLaptop, 
+  isLaptop: propIsLaptop, 
   isSelectedForCompare, 
   onSelectDevice, 
   onToggleComparison 
 }) => {
+  const isLaptop = propIsLaptop ?? isLaptopDevice(device);
   const rafRef = useRef(null);
 
   const handleMouseMove = useCallback((e) => {

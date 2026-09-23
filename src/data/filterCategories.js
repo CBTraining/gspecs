@@ -10,7 +10,6 @@ export const FILTER_CATEGORIES = [
   { key: 'Pen Compatibility?', label: 'Pen Compatible' }
 ];
 
-export const parsePrice = (priceStr) => {
-  if (!priceStr) return 0;
-  return Number(priceStr.replace(/[^0-9.]/g, ''));
-};
+import { parsePrice } from '../utils/formatters';
+
+export { parsePrice };
