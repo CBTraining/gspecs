@@ -40,7 +40,7 @@ const StepUpChart = () => {
             Releasing this section soon!
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', maxWidth: '420px', margin: '0 auto', lineHeight: 1.5 }}>
-            We're building an interactive comparison ladder to help you easily walk customers through feature upgrades between models. Check back soon!
+            We're building an interactive comparison ladder to help you easily understand feature upgrades between models for your own information. Check back soon!
           </p>
         </div>
       </div>
