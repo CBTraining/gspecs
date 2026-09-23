@@ -175,6 +175,26 @@ export const fetchDeviceData = (onBackgroundUpdate) => {
         return String(val).trim().toUpperCase() === 'TRUE';
       };
 
+      const resolveBarcode = (row) => {
+        let val = (row['Barcode'] || '').trim();
+        if (val.startsWith('=IMAGE') || val.startsWith('IMAGE')) {
+          const m = val.match(/IMAGE\s*\(\s*["']([^"']+)["']/i);
+          if (m && m[1]) return m[1];
+        }
+        if (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:')) {
+          return val;
+        }
+        if (val && val.toLowerCase() !== 'none') {
+          return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(val)}&code=UPCA`;
+        }
+        // Column L in Google Sheet: =IMAGE("https://barcode.tec-it.com/barcode.ashx?data=" & ENCODEURL(J2) & "&code=UPCA")
+        const code = String(row['UPC'] || row['SKU'] || '').trim();
+        if (code && code.toLowerCase() !== 'none') {
+          return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(code)}&code=UPCA`;
+        }
+        return '';
+      };
+
       const validData = results.data
         .filter(row => row['Device Name'] && isDeviceActive(row))
         .map(row => {
@@ -182,7 +202,8 @@ export const fetchDeviceData = (onBackgroundUpdate) => {
           return {
             ...row,
             'Device Image': image,
-            'Drive Thumbnail': driveThumbnail
+            'Drive Thumbnail': driveThumbnail,
+            'Barcode': resolveBarcode(row) || row['Barcode']
           };
         });
 

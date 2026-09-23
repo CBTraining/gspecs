@@ -92,18 +92,36 @@ const downloadImage = async (url, filepath) => {
   }
 };
 
-const generateBarcode = (sku, filepath) => {
+const generateBarcode = async (code, filepath) => {
+  const cleanCode = String(code).trim();
+  // Try fetching the exact Column L barcode image from tec-it
+  try {
+    const tecItUrl = `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(cleanCode)}&code=UPCA`;
+    const res = await fetchWithTimeout(tecItUrl, 5000);
+    if (res.ok) {
+      const arrayBuffer = await res.arrayBuffer();
+      fs.writeFileSync(filepath, Buffer.from(arrayBuffer));
+      console.log(`Saved Column L barcode for ${cleanCode} to ${filepath}`);
+      return;
+    }
+  } catch (err) {
+    console.warn(`Could not download tec-it barcode for ${cleanCode}, generating locally:`, err.message);
+  }
+
+  // Fallback to bwipjs generator
   return new Promise((resolve) => {
+    const digitsOnly = cleanCode.replace(/[^0-9]/g, '');
+    const isUpc = digitsOnly.length >= 11 && digitsOnly.length <= 12;
     bwipjs.toBuffer({
-      bcid: 'code128',
-      text: sku,
+      bcid: isUpc ? 'upca' : 'code128',
+      text: isUpc ? digitsOnly : cleanCode,
       scale: 3,
       height: 10,
       includetext: true,
       textxalign: 'center',
     }, (err, png) => {
       if (err) {
-        console.error(`Error generating barcode for ${sku}:`, err);
+        console.error(`Error generating barcode for ${cleanCode}:`, err);
         resolve();
       } else {
         fs.writeFileSync(filepath, png);
@@ -111,6 +129,26 @@ const generateBarcode = (sku, filepath) => {
       }
     });
   });
+};
+
+const resolveBarcode = (row) => {
+  let val = (row['Barcode'] || '').trim();
+  if (val.startsWith('=IMAGE') || val.startsWith('IMAGE')) {
+    const m = val.match(/IMAGE\s*\(\s*["']([^"']+)["']/i);
+    if (m && m[1]) return m[1];
+  }
+  if (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:')) {
+    return val;
+  }
+  if (val && val.toLowerCase() !== 'none') {
+    return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(val)}&code=UPCA`;
+  }
+  // Column L formula in Google Sheet: =IMAGE("https://barcode.tec-it.com/barcode.ashx?data=" & ENCODEURL(J2) & "&code=UPCA")
+  const code = String(row['UPC'] || row['SKU'] || '').trim();
+  if (code && code.toLowerCase() !== 'none') {
+    return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(code)}&code=UPCA`;
+  }
+  return '';
 };
 
 const syncImages = async () => {
@@ -123,8 +161,6 @@ const syncImages = async () => {
   try {
     const response = await fetchWithTimeout(SHEET_URL, 5000);
     csvText = await response.text();
-    fs.writeFileSync(csvPath, csvText);
-    console.log('Saved CSV to public/devices.csv');
   } catch (err) {
     console.warn('Could not fetch remote Google Sheet (using local devices.csv if present):', err.message);
     if (fs.existsSync(csvPath)) {
@@ -158,6 +194,16 @@ const syncImages = async () => {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
+        // Populate Barcode column with Column L barcode URL
+        results.data.forEach(row => {
+          row['Barcode'] = resolveBarcode(row);
+        });
+
+        // Save CSV with resolved Column L barcodes
+        const updatedCsv = Papa.unparse(results.data);
+        fs.writeFileSync(csvPath, updatedCsv, 'utf8');
+        console.log('Saved CSV with Column L barcodes to public/devices.csv');
+
         const isDeviceActive = (row) => {
           const keys = Object.keys(row);
           const currentKey = keys.find(k => k.trim().toLowerCase() === 'current') || keys[2];
@@ -171,14 +217,12 @@ const syncImages = async () => {
         for (const row of rows) {
           const imageVal = row['Device Image'];
           const sku = row.SKU;
+          const barcodeCode = row['UPC'] || row['SKU'];
           
-          // Generate barcode
-          if (sku) {
+          // Generate/download Column L barcode
+          if (sku && barcodeCode) {
             const barcodePath = path.join(BARCODES_DIR, `${sku.replace(/[^a-zA-Z0-9_-]/g, '')}.png`);
-            if (!fs.existsSync(barcodePath)) {
-              console.log(`Generating barcode for ${sku}...`);
-              await generateBarcode(sku, barcodePath);
-            }
+            await generateBarcode(barcodeCode, barcodePath);
           }
 
           // Download image
