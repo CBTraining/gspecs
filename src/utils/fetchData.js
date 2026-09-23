@@ -10,7 +10,7 @@ const FALLBACK_ACCESSORIES_URL = `${import.meta.env.BASE_URL}accessories.csv?v=$
 
 const CACHE_KEY = `gspecs_devices_cache_${appVersion}`;
 const ACCESSORIES_CACHE_KEY = `gspecs_accessories_cache_${appVersion}`;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes for aggressive freshness
 
 // Clean up previous version caches from localStorage
 try {
@@ -58,9 +58,18 @@ const convertDriveLink = (url, deviceName) => {
 };
 
 const fetchCsvContent = async (liveUrl, fallbackUrl, validatorKeyword = '') => {
+  const fetchOptions = {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
+  };
+
   try {
     const separator = liveUrl.includes('?') ? '&' : '?';
-    const res = await fetch(`${liveUrl}${separator}_t=${Date.now()}`);
+    const res = await fetch(`${liveUrl}${separator}_t=${Date.now()}`, fetchOptions);
     if (res.ok) {
       const text = await res.text();
       if (text && text.length > 50 && (!validatorKeyword || text.includes(validatorKeyword))) {
@@ -71,16 +80,17 @@ const fetchCsvContent = async (liveUrl, fallbackUrl, validatorKeyword = '') => {
     console.warn('Direct Google Sheet fetch failed, falling back to local CSV:', err);
   }
 
-  const fallbackRes = await fetch(fallbackUrl);
+  const fallbackSep = fallbackUrl.includes('?') ? '&' : '?';
+  const fallbackRes = await fetch(`${fallbackUrl}${fallbackSep}_t=${Date.now()}`, fetchOptions);
   return fallbackRes.text();
 };
 
-export const fetchAccessoriesData = async () => {
+export const fetchAccessoriesData = async (forceNetwork = false) => {
   try {
     const cached = localStorage.getItem(ACCESSORIES_CACHE_KEY);
     if (cached) {
       const { timestamp, data } = JSON.parse(cached);
-      if (Date.now() - timestamp < CACHE_TTL_MS && data && typeof data === 'object') {
+      if (!forceNetwork && Date.now() - timestamp < CACHE_TTL_MS && data && typeof data === 'object') {
         setDynamicBasketDetails(data);
         return data;
       }
@@ -131,9 +141,9 @@ export const fetchAccessoriesData = async () => {
   }
 };
 
-export const fetchDeviceData = (onBackgroundUpdate) => {
+export const fetchDeviceData = (onBackgroundUpdate, forceNetwork = false) => {
   // Concurrently fetch accessory data in background
-  fetchAccessoriesData().catch(() => {});
+  fetchAccessoriesData(forceNetwork).catch(() => {});
 
   let staleData = null;
   let isCacheFresh = false;
@@ -145,7 +155,7 @@ export const fetchDeviceData = (onBackgroundUpdate) => {
       const { timestamp, data } = JSON.parse(cached);
       if (Array.isArray(data) && data.length > 0) {
         staleData = data;
-        if (Date.now() - timestamp < CACHE_TTL_MS) {
+        if (!forceNetwork && Date.now() - timestamp < CACHE_TTL_MS) {
           isCacheFresh = true;
         }
       }

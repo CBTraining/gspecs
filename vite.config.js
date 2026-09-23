@@ -5,6 +5,19 @@ const buildVersion = Date.now().toString();
 
 const versionPlugin = () => ({
   name: 'generate-version-json',
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
+      if (req.url && (req.url.startsWith('/version.json') || req.url.startsWith('/gspecs/version.json'))) {
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.end(JSON.stringify({ version: buildVersion, buildTime: new Date().toISOString() }, null, 2));
+        return;
+      }
+      next();
+    });
+  },
   generateBundle() {
     this.emitFile({
       type: 'asset',

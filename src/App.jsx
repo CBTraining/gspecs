@@ -1,14 +1,16 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { fetchDeviceData } from './utils/fetchData';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { useTheme } from './hooks/useTheme';
+import { useAutoUpdate } from './hooks/useAutoUpdate';
 
 import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
 import CompareBar from './components/comparison/CompareBar';
 import DeviceList from './components/DeviceList';
 import DeviceDetail from './components/DeviceDetail';
+import UpdateNotification from './components/common/UpdateNotification';
 
 const GlossaryView = lazy(lazyWithRetry(() => import('./components/GlossaryView')));
 const CompareModal = lazy(lazyWithRetry(() => import('./components/CompareModal')));
@@ -79,11 +81,52 @@ function App() {
     setComparisonDevices([]);
   };
 
+  const {
+    updateAvailable,
+    isUpdating,
+    countdown,
+    isPaused,
+    pauseCountdown,
+    applyUpdate
+  } = useAutoUpdate();
+
+  const lastDataCheckRef = useRef(Date.now());
+
+  const handleDataUpdate = useCallback((updatedData) => {
+    if (!Array.isArray(updatedData) || updatedData.length === 0) return;
+    setDevices(updatedData);
+
+    // Live update currently viewed device specs if modal is open
+    setSelectedDevice(prev => {
+      if (!prev) return null;
+      const matched = updatedData.find(d => d.SKU === prev.SKU);
+      return matched || prev;
+    });
+
+    // Live update devices currently in comparison bar or modal
+    setComparisonDevices(prev => {
+      if (!prev || prev.length === 0) return prev;
+      return prev.map(d => updatedData.find(item => item.SKU === d.SKU) || d);
+    });
+  }, []);
+
+  const syncCatalogData = useCallback(async (force = false) => {
+    lastDataCheckRef.current = Date.now();
+    try {
+      const data = await fetchDeviceData(handleDataUpdate, force);
+      if (Array.isArray(data) && data.length > 0) {
+        handleDataUpdate(data);
+      }
+    } catch (err) {
+      console.warn('[Sync] Background catalog sync failed:', err);
+    }
+  }, [handleDataUpdate]);
+
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await fetchDeviceData((updatedData) => setDevices(updatedData));
-        setDevices(data);
+        const data = await fetchDeviceData(handleDataUpdate);
+        handleDataUpdate(data);
         setLoading(false);
 
         // Deep link: check for ?sku=SKU parameter on page load (case-insensitive match)
@@ -103,7 +146,35 @@ function App() {
     };
     
     loadData();
-  }, []);
+  }, [handleDataUpdate]);
+
+  // Periodic background data sync every 2 minutes & on tab focus
+  useEffect(() => {
+    const interval = setInterval(() => {
+      syncCatalogData(true);
+    }, 2 * 60 * 1000);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastDataCheckRef.current > 90 * 1000) {
+        syncCatalogData(true);
+      }
+    };
+
+    const handleFocus = () => {
+      if (Date.now() - lastDataCheckRef.current > 90 * 1000) {
+        syncCatalogData(true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [syncCatalogData]);
 
   useEffect(() => {
     if (loading) return; // Wait until catalog data is fully loaded to prevent wiping out params on cold boot
@@ -232,6 +303,15 @@ function App() {
           />
         )}
       </Suspense>
+
+      <UpdateNotification 
+        show={updateAvailable}
+        countdown={countdown}
+        isUpdating={isUpdating}
+        isPaused={isPaused}
+        onUpdateNow={applyUpdate}
+        onPause={pauseCountdown}
+      />
 
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>

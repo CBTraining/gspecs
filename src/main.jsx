@@ -16,6 +16,15 @@ if (typeof document !== 'undefined') {
   });
 }
 
+// Proactively unregister any legacy service workers to prevent stale asset caching
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister().catch(() => {});
+    }
+  }).catch(() => {});
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
