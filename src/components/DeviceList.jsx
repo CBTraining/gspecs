@@ -145,49 +145,25 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
         </button>
       </div>
 
-      {/* Search Input Bar */}
-      <div 
-        style={{
-          position: 'relative',
-          marginBottom: '1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          maxWidth: '500px'
-        }}
-      >
-        <Search 
-          size={18} 
-          style={{
-            position: 'absolute',
-            left: '1rem',
-            color: 'var(--text-secondary)',
-            pointerEvents: 'none'
-          }} 
-        />
-        <input
-          type="text"
-          aria-label="Search devices"
-          placeholder="Search devices by name, SKU, or specs..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '0.65rem 1rem 0.65rem 2.5rem',
-            borderRadius: '1.5rem',
-            border: '1px solid var(--border-color)',
-            backgroundColor: 'var(--surface-color)',
-            color: 'var(--text-primary)',
-            fontSize: '0.9rem',
-            outline: 'none',
-            fontFamily: 'inherit',
-            transition: 'border-color 0.2s ease'
-          }}
-          className="search-input"
-        />
-      </div>
+      {/* Search Input Bar & Quiz Prompt Banner (Shared Row) */}
+      <div className="search-quiz-row">
+        <div className="search-bar-wrapper">
+          <Search 
+            size={18} 
+            className="search-icon"
+          />
+          <input
+            type="text"
+            aria-label="Search devices"
+            placeholder="Search devices by name, SKU, or specs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+        </div>
 
-      {/* Quiz Prompt Banner */}
-      <QuizBanner onOpenQuiz={onOpenQuiz} />
+        <QuizBanner onOpenQuiz={onOpenQuiz} />
+      </div>
 
       {brands.length === 0 ? (
         <div style={{ 
