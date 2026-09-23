@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { fetchDeviceData } from './utils/fetchData';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { useTheme } from './hooks/useTheme';
 import { useAutoUpdate } from './hooks/useAutoUpdate';
+import { useDeviceCatalog } from './hooks/useDeviceCatalog';
 
 import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
 import CompareBar from './components/comparison/CompareBar';
 import DeviceList from './components/DeviceList';
-import DeviceDetail from './components/DeviceDetail';
 import UpdateNotification from './components/common/UpdateNotification';
 
+const DeviceDetail = lazy(lazyWithRetry(() => import('./components/DeviceDetail')));
 const GlossaryView = lazy(lazyWithRetry(() => import('./components/GlossaryView')));
 const CompareModal = lazy(lazyWithRetry(() => import('./components/CompareModal')));
 const QuizModal = lazy(lazyWithRetry(() => import('./components/QuizModal')));
@@ -45,41 +45,22 @@ const pageTransitionVariants = {
 };
 
 function App() {
-  const [devices, setDevices] = useState([]);
-  const [selectedDevice, setSelectedDevice] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('devices'); // 'devices' | 'stepup' | 'glossary'
+  const {
+    devices,
+    selectedDevice,
+    setSelectedDevice,
+    loading,
+    error,
+    comparisonDevices,
+    toggleComparison,
+    clearComparison
+  } = useDeviceCatalog();
 
-  const { theme, toggleTheme } = useTheme();
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setSelectedDevice(null);
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  };
-  
-  // Comparison state
-  const [comparisonDevices, setComparisonDevices] = useState([]);
+  const [activeTab, setActiveTab] = useState('devices'); // 'devices' | 'stepup' | 'glossary' | 'appindex'
   const [isComparing, setIsComparing] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
 
-  const toggleComparison = (device) => {
-    setComparisonDevices(prev => {
-      if (prev.find(d => d.SKU === device.SKU)) {
-        return prev.filter(d => d.SKU !== device.SKU);
-      }
-      if (prev.length >= 3) {
-        alert("You can compare up to 3 devices at a time.");
-        return prev;
-      }
-      return [...prev, device];
-    });
-  };
-
-  const clearComparison = () => {
-    setComparisonDevices([]);
-  };
+  const { theme, toggleTheme } = useTheme();
 
   const {
     updateAvailable,
@@ -90,110 +71,11 @@ function App() {
     applyUpdate
   } = useAutoUpdate();
 
-  const lastDataCheckRef = useRef(Date.now());
-
-  const handleDataUpdate = useCallback((updatedData) => {
-    if (!Array.isArray(updatedData) || updatedData.length === 0) return;
-    setDevices(updatedData);
-
-    // Live update currently viewed device specs if modal is open
-    setSelectedDevice(prev => {
-      if (!prev) return null;
-      const matched = updatedData.find(d => d.SKU === prev.SKU);
-      return matched || prev;
-    });
-
-    // Live update devices currently in comparison bar or modal
-    setComparisonDevices(prev => {
-      if (!prev || prev.length === 0) return prev;
-      return prev.map(d => updatedData.find(item => item.SKU === d.SKU) || d);
-    });
-  }, []);
-
-  const syncCatalogData = useCallback(async (force = false) => {
-    lastDataCheckRef.current = Date.now();
-    try {
-      const data = await fetchDeviceData(handleDataUpdate, force);
-      if (Array.isArray(data) && data.length > 0) {
-        handleDataUpdate(data);
-      }
-    } catch (err) {
-      console.warn('[Sync] Background catalog sync failed:', err);
-    }
-  }, [handleDataUpdate]);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await fetchDeviceData(handleDataUpdate);
-        handleDataUpdate(data);
-        setLoading(false);
-
-        // Deep link: check for ?sku=SKU parameter on page load (case-insensitive match)
-        const params = new URLSearchParams(window.location.search);
-        const skuParam = params.get('sku');
-        if (skuParam) {
-          const deviceMatch = data.find(d => d.SKU?.toLowerCase() === skuParam.toLowerCase());
-          if (deviceMatch) {
-            setSelectedDevice(deviceMatch);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Failed to load device data.");
-        setLoading(false);
-      }
-    };
-    
-    loadData();
-  }, [handleDataUpdate]);
-
-  // Periodic background data sync every 2 minutes & on tab focus
-  useEffect(() => {
-    const interval = setInterval(() => {
-      syncCatalogData(true);
-    }, 2 * 60 * 1000);
-
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && Date.now() - lastDataCheckRef.current > 90 * 1000) {
-        syncCatalogData(true);
-      }
-    };
-
-    const handleFocus = () => {
-      if (Date.now() - lastDataCheckRef.current > 90 * 1000) {
-        syncCatalogData(true);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibility);
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibility);
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [syncCatalogData]);
-
-  useEffect(() => {
-    if (loading) return; // Wait until catalog data is fully loaded to prevent wiping out params on cold boot
-    
-    const params = new URLSearchParams(window.location.search);
-    if (selectedDevice) {
-      document.body.style.overflow = 'hidden';
-      params.set('sku', selectedDevice.SKU);
-    } else {
-      document.body.style.overflow = '';
-      params.delete('sku');
-    }
-    const newRelativePathQuery = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-    window.history.replaceState({}, '', newRelativePathQuery);
-
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [selectedDevice, loading]);
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSelectedDevice(null);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
 
   return (
     <div className="app-container">
@@ -263,11 +145,13 @@ function App() {
 
       <AnimatePresence>
         {selectedDevice && (
-          <DeviceDetail 
-            key="detail"
-            device={selectedDevice} 
-            onBack={() => setSelectedDevice(null)} 
-          />
+          <Suspense fallback={null}>
+            <DeviceDetail 
+              key="detail"
+              device={selectedDevice} 
+              onBack={() => setSelectedDevice(null)} 
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 
