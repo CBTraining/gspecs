@@ -37,7 +37,74 @@ export const GLOSSARY_MAP = {
   'fingerprint sensor': 'A biometric touch sensor that lets you securely unlock your laptop, sign into apps, and authorize purchases with a quick tap of your finger.',
   'face authentication': 'Hands-free biometric login that scans your facial features via the camera to instantly unlock your device when you sit down.',
   'build': 'The exterior materials and chassis construction—such as aluminum, magnesium alloy, or carbon fiber—determining durability, weight, and premium feel.',
-  'ports': 'The physical connection jacks on the laptop (USB-C, USB-A, HDMI, headphone jack) for plugging in monitors, chargers, and accessories.'
+  'ports': 'The physical connection jacks on the laptop (USB-C, USB-A, HDMI, headphone jack) for plugging in monitors, chargers, and accessories.',
+  'nano ceramic': 'A micro-arc oxidation coating on magnesium-aluminum alloy that creates an ultra-durable, ceramic-like matte finish that resists scratches, fingerprints, and daily wear while keeping the laptop featherlight.',
+  'magnesium-alloy': 'An aerospace-grade metal alloy that is significantly lighter than aluminum while remaining rigid, impact-resistant, and cool to the touch.',
+  'magnesium alloy': 'An aerospace-grade metal alloy that is significantly lighter than aluminum while remaining rigid, impact-resistant, and cool to the touch.',
+  'corning gorilla glass': 'Chemically toughened cover glass engineered by Corning to protect screens against drops, scratches, and everyday touch pressure.',
+  'gorilla glass': 'Chemically toughened cover glass engineered by Corning to protect screens against drops, scratches, and everyday touch pressure.',
+  'carbon fiber': 'An ultra-light, aerospace-grade composite with incredible tensile strength, offering maximum structural rigidity without extra weight.',
+  'aluminum': 'A sleek, lightweight metal that provides high structural rigidity, excellent heat dissipation, and a premium finish.',
+  'usi': 'Universal Stylus Initiative: A standardized digital pen protocol that allows compatible active styluses to work seamlessly across touchscreen Chromebooks and Googlebooks.',
+  'usi 2.0': 'Universal Stylus Initiative 2.0: An advanced digital pen standard featuring tilt recognition, wireless charging, and responsive, lag-free writing and drawing.',
+  'ufs': 'Universal Flash Storage: High-speed mobile storage technology offering faster app launches and data transfer rates than traditional eMMC.',
+  'privacy camera': 'A webcam equipped with a physical shutter or privacy switch that physically covers the camera lens for guaranteed privacy when not in use.',
+  'cable lock slot': 'A reinforced security slot (such as Kensington) that lets you physically lock the laptop to a desk or table with a security cable.',
+  'dci-p3': 'A wide cinematic color space (covering ~25% more color range than sRGB), providing richer reds, greens, and vibrant visuals essential for HDR streaming and creative editing.',
+  'srgb': 'The standard digital color spectrum used for the web and everyday apps. 100% sRGB means full coverage of standard colors for clear, accurate pictures.',
+  'ntsc': 'A color standard where 45% NTSC is entry-level for general browsing, while 72% NTSC is roughly equivalent to 100% sRGB for richer, more lifelike colors.',
+  'audio jack': 'Standard 3.5mm audio jack for connecting wired headphones, headsets, or external speakers with zero wireless latency.',
+  'headphone jack': 'Standard 3.5mm audio jack for connecting wired headphones, headsets, or external speakers without wireless latency.',
+  'intel core ultra': 'Intel’s latest hybrid performance processors featuring integrated NPU AI acceleration, premium Intel Arc graphics, and exceptional battery efficiency.',
+  'snapdragon x elite': 'Qualcomm’s breakthrough ARM-based PC processor, delivering elite multi-core computing power, multi-day battery endurance, and a powerful 45 TOPS NPU.',
+  'intel ai boost': 'Intel’s dedicated integrated Neural Processing Unit (NPU) for offloading on-device AI tasks, background effects, and generative AI features without draining battery.',
+  'ryzen ai': 'AMD’s dedicated neural processing engine (NPU) designed to accelerate generative AI, smart camera features, and local AI workloads efficiently.'
+};
+
+export const GLOSSARY_TITLES = {
+  'ram': 'RAM',
+  'npu': 'NPU',
+  'ssd': 'SSD',
+  'emmc': 'eMMC',
+  'ufs': 'UFS',
+  'hdmi': 'HDMI',
+  'ips': 'IPS',
+  'oled': 'OLED',
+  'usb-c': 'USB-C',
+  'usb-a': 'USB-A',
+  'usi': 'USI',
+  'usi 2.0': 'USI 2.0',
+  'dci-p3': 'DCI-P3',
+  'srgb': 'sRGB',
+  'ntsc': 'NTSC',
+  'microsd': 'MicroSD',
+  'wi-fi': 'Wi-Fi',
+  'nano ceramic': 'Nano Ceramic',
+  'magnesium-alloy': 'Magnesium Alloy',
+  'magnesium alloy': 'Magnesium Alloy',
+  'corning gorilla glass': 'Corning Gorilla Glass',
+  'gorilla glass': 'Gorilla Glass',
+  'carbon fiber': 'Carbon Fiber',
+  'aluminum': 'Aluminum',
+  'fingerprint sensor': 'Fingerprint Sensor',
+  'face authentication': 'Face Authentication',
+  'privacy camera': 'Privacy Camera',
+  'cable lock slot': 'Cable Lock Slot',
+  'intel core ultra': 'Intel Core Ultra',
+  'snapdragon x elite': 'Snapdragon X Elite',
+  'intel ai boost': 'Intel AI Boost',
+  'ryzen ai': 'Ryzen AI',
+  'audio jack': 'Audio Jack',
+  'headphone jack': 'Headphone Jack'
+};
+
+export const getGlossaryTitle = (key) => {
+  if (!key) return '';
+  if (GLOSSARY_TITLES[key.toLowerCase()]) return GLOSSARY_TITLES[key.toLowerCase()];
+  return key
+    .split(' ')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 };
 
 
@@ -119,6 +186,18 @@ export const GLOSSARY_CATEGORIES = [
       { 
         name: 'eMMC', 
         text: 'Affordable, low-power flash storage commonly found in entry-level laptops for everyday homework, streaming, and cloud-based file saving.' 
+      },
+      { 
+        name: 'UFS', 
+        text: 'Universal Flash Storage: High-speed mobile flash storage that provides significantly faster app launches, boot speeds, and data transfer than traditional eMMC.' 
+      },
+      { 
+        name: 'Intel Core Ultra', 
+        text: 'Intel’s latest hybrid performance processors featuring integrated NPU AI acceleration, premium Intel Arc graphics, and exceptional battery efficiency.' 
+      },
+      { 
+        name: 'Snapdragon X Elite', 
+        text: 'Qualcomm’s breakthrough ARM-based PC processor, delivering elite multi-core computing power, multi-day battery endurance, and a powerful 45 TOPS NPU.' 
       }
     ]
   },
@@ -135,12 +214,24 @@ export const GLOSSARY_CATEGORIES = [
         text: 'The universal display port for plugging directly into televisions, external monitors, and conference projectors without needing a dongle or adapter.' 
       },
       { 
+        name: 'USB-C', 
+        text: 'The modern reversible oval port used for charging, connecting external displays, and transferring data quickly with modern accessories.' 
+      },
+      { 
+        name: 'USB-A', 
+        text: 'The classic rectangular USB port used for connecting standard flash drives, mice, and older cables without needing an adapter.' 
+      },
+      { 
         name: 'Wi-Fi', 
-        text: 'Wireless internet connectivity. Modern Wi-Fi 6 and 6E standards keep connections fast and reliable even in crowded homes with multiple family devices online.' 
+        text: 'Wireless internet connectivity. Modern Wi-Fi 6, 6E, and 7 standards keep connections fast and reliable even in crowded homes with multiple devices online.' 
       },
       { 
         name: 'Bluetooth', 
         text: 'Connects cordless accessories like wireless earbuds, keyboards, mice, and stylus pens.' 
+      },
+      { 
+        name: 'Audio Jack', 
+        text: 'Standard 3.5mm headphone jack for plugging in wired headphones, headsets, or external speakers with zero wireless latency.' 
       }
     ]
   },
@@ -157,8 +248,36 @@ export const GLOSSARY_CATEGORIES = [
         text: 'The chassis materials and construction—such as aluminum, magnesium alloy, or carbon fiber—determining durability, rigidity, and premium in-hand feel.' 
       },
       { 
+        name: 'Nano Ceramic', 
+        text: 'A micro-arc oxidation coating on magnesium-aluminum alloy that creates an ultra-durable, ceramic-like matte finish that resists scratches, fingerprints, and daily wear while keeping the laptop featherlight.' 
+      },
+      { 
+        name: 'Magnesium Alloy', 
+        text: 'An aerospace-grade metal alloy that is significantly lighter than aluminum while remaining rigid, impact-resistant, and cool to the touch.' 
+      },
+      { 
+        name: 'Corning Gorilla Glass', 
+        text: 'Chemically toughened cover glass engineered by Corning to protect screens against drops, scratches, and everyday touch pressure.' 
+      },
+      { 
+        name: 'Carbon Fiber', 
+        text: 'An ultra-light, aerospace-grade composite with incredible tensile strength, offering maximum structural rigidity without extra weight.' 
+      },
+      { 
+        name: 'Aluminum', 
+        text: 'A sleek, lightweight metal that provides high structural rigidity, excellent heat dissipation, and a premium finish.' 
+      },
+      { 
         name: 'Security', 
         text: 'Biometric and hardware protections (like fingerprint scanners and facial recognition) that keep your device secure without passwords.' 
+      },
+      { 
+        name: 'Privacy Camera', 
+        text: 'A webcam equipped with a physical shutter or privacy switch that physically covers the camera lens for guaranteed privacy when not in use.' 
+      },
+      { 
+        name: 'Cable Lock Slot', 
+        text: 'A reinforced security slot (such as Kensington) that lets you physically lock the laptop to a desk or table with a security cable.' 
       },
       { 
         name: 'MSRP', 

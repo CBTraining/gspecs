@@ -1,7 +1,59 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GLOSSARY_MAP } from '../../data/glossary';
+import { GLOSSARY_MAP, getGlossaryTitle } from '../../data/glossary';
 import { TooltipContext } from './TooltipContext';
+
+// Spec labels that describe generic categories rather than specific hardware technologies
+const GENERIC_SPEC_LABELS = new Set([
+  'processor',
+  'storage',
+  'build',
+  'ports',
+  'formfactor',
+  'security',
+  'weight',
+  'keyboard',
+  'camera'
+]);
+
+const sortedGlossaryKeys = Object.keys(GLOSSARY_MAP).sort((a, b) => b.length - a.length);
+
+export const findGlossaryMatch = (text) => {
+  if (!text || typeof text !== 'string') return null;
+  const trimmed = text.trim();
+  // Don't match on long narrative text, paragraphs, or full sentences
+  if (trimmed.length > 50 || (trimmed.includes('.') && trimmed.length > 35)) return null;
+
+  const textLower = trimmed.toLowerCase();
+
+  // 1. Exact match first
+  if (GLOSSARY_MAP[textLower]) {
+    return textLower;
+  }
+
+  // 2. Whole-word / phrase match against sorted glossary keys (longest phrase first)
+  for (const key of sortedGlossaryKeys) {
+    if (GENERIC_SPEC_LABELS.has(key)) {
+      // Only match generic labels if the text itself represents that label (e.g. "Processor", "Ports", "RAM/Memory")
+      const stripped = textLower.replace(/[^a-z0-9]/g, '');
+      const keyStripped = key.replace(/[^a-z0-9]/g, '');
+      if (stripped === keyStripped) {
+        return key;
+      }
+      continue;
+    }
+
+    // For specific hardware components, features, and materials:
+    // Match with strict word boundaries to prevent false positives like "ceramic" matching "ram"
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|[^a-zA-Z0-9])${escaped}([^a-zA-Z0-9]|$)`, 'i');
+    if (regex.test(textLower)) {
+      return key;
+    }
+  }
+
+  return null;
+};
 
 export const SpecText = ({ text }) => {
   const { activeTooltipId, setActiveTooltipId } = useContext(TooltipContext);
@@ -19,10 +71,7 @@ export const SpecText = ({ text }) => {
   
   if (!text) return null;
   
-  const textStr = String(text).toLowerCase();
-  const matchKey = Object.keys(GLOSSARY_MAP)
-    .sort((a, b) => b.length - a.length)
-    .find(key => textStr.includes(key));
+  const matchKey = findGlossaryMatch(String(text));
 
   if (!matchKey) return <span>{text}</span>;
 
@@ -47,11 +96,7 @@ export const SpecText = ({ text }) => {
     }
   };
 
-  // Convert matchKey like "screen brightness" -> "Screen Brightness"
-  const formattedTitle = matchKey
-    .split(' ')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
+  const formattedTitle = getGlossaryTitle(matchKey);
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
