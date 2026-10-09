@@ -236,7 +236,7 @@ function App() {
                             />
                           </Suspense>
                         ) : (
-                          <div className="desktop-detail-placeholder glass-panel">
+                          <div className="desktop-detail-placeholder">
                             <div className="placeholder-icon-wrap">
                               <Laptop size={36} />
                             </div>
