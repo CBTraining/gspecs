@@ -43,13 +43,21 @@
 }
 
 /* Floating Scanning Indicator Toast */
-.scanning-indicator-toast {
+.scanning-indicator-toast-wrapper {
   position: fixed;
   top: 4.25rem;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 1000;
-  width: calc(100% - 2rem);
+  pointer-events: none;
+  padding: 0 1rem;
+}
+
+.scanning-indicator-toast {
+  width: 100%;
   max-width: 440px;
   pointer-events: auto;
 }

@@ -13,22 +13,31 @@ export default function UpdateNotification({
   return (
     <AnimatePresence>
       {show && (
-        <motion.div
-          initial={{ opacity: 0, y: -24, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -24, scale: 0.95 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
+        <div
           style={{
             position: 'fixed',
             top: '1rem',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             zIndex: 9999,
-            width: 'calc(100% - 2rem)',
-            maxWidth: '520px',
-            pointerEvents: 'auto'
+            pointerEvents: 'none',
+            padding: '0 1rem'
           }}
         >
+          <motion.div
+            initial={{ opacity: 0, y: -24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -24, scale: 0.95 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              pointerEvents: 'auto'
+            }}
+          >
           <div
             style={{
               display: 'flex',
@@ -123,7 +132,8 @@ export default function UpdateNotification({
             </div>
           </div>
         </motion.div>
-      )}
-    </AnimatePresence>
+      </div>
+    )}
+  </AnimatePresence>
   );
 }
