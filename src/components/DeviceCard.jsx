@@ -110,7 +110,7 @@ export const DeviceCard = memo(({
             {personaTags.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.2rem' }}>
                 {personaTags.map((p, i) => (
-                  <span key={i} className="persona-tag" style={{ backgroundColor: getPersonaColor(p) }}>
+                  <span key={i} className="persona-tag" style={{ background: getPersonaColor(p) }}>
                     {p}
                   </span>
                 ))}

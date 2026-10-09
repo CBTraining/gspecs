@@ -72,7 +72,7 @@ export const QuizResultCard = ({ device, matchPercentage, highlights = [], onSel
               <span style={{ 
                 fontSize: '0.7rem', 
                 color: '#ffffff', 
-                backgroundColor: getPersonaColor(device.Persona), 
+                background: getPersonaColor(device.Persona), 
                 borderRadius: '0.25rem',
                 padding: '0.1rem 0.4rem',
                 fontWeight: '600'

@@ -83,7 +83,7 @@ export const StepUpTierCard = ({
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>{device.MSRP}</div>
                 {device.Persona && (
-                  <span className="persona-tag" style={{ backgroundColor: getPersonaColor(device.Persona), marginTop: '0.25rem' }}>
+                  <span className="persona-tag" style={{ background: getPersonaColor(device.Persona), marginTop: '0.25rem' }}>
                     {device.Persona}
                   </span>
                 )}
