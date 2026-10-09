@@ -285,3 +285,71 @@
   color: #f87171;
 }
 
+/* PWA Install Button & Banner at the top */
+.pwa-install-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.25rem;
+  margin-bottom: 0.85rem;
+  width: 100%;
+}
+
+.btn-install-pwa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 9999px;
+  padding: 0.55rem 1.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  user-select: none;
+}
+
+.btn-install-pwa:hover {
+  background-color: var(--surface-hover);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-install-pwa:active {
+  transform: translateY(0);
+}
+
+.pwa-btn-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.pwa-btn-badge {
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  margin-left: 0.15rem;
+}
+
+.dark .btn-install-pwa {
+  background-color: var(--surface-color);
+  border-color: #383838;
+}
+
+.dark .btn-install-pwa:hover {
+  border-color: var(--accent-color);
+  background-color: var(--surface-hover);
+  box-shadow: 0 0 15px rgba(49, 132, 254, 0.25);
+}
+
+

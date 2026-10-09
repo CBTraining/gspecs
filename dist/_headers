@@ -7,6 +7,12 @@
 /version.json
   Cache-Control: no-cache, no-store, must-revalidate
 
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/manifest.webmanifest
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /devices.csv
   Cache-Control: no-cache, no-store, must-revalidate
 

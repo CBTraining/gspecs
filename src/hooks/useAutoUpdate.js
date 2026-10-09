@@ -29,6 +29,17 @@ export function useAutoUpdate() {
           names.forEach((name) => caches.delete(name));
         }).catch(() => {});
       }
+
+      // Tell waiting service worker to activate immediately
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const reg of registrations) {
+            if (reg.waiting) {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+          }
+        }).catch(() => {});
+      }
     } catch (e) {
       console.warn('[AutoUpdate] Error clearing cache before reload:', e);
     }
@@ -95,9 +106,37 @@ export function useAutoUpdate() {
     // Immediate check on load/refresh (catches updates right away without delay)
     checkForUpdate();
 
+    // Check service worker for updates on load/refresh
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const reg of registrations) {
+          reg.update().catch(() => {});
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        }
+      }).catch(() => {});
+
+      const handleControllerChange = () => {
+        checkForUpdate();
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+      var cleanupSw = () => {
+        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+      };
+    }
+
     // Periodic check every 2 minutes
     const interval = setInterval(() => {
       checkForUpdate();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const reg of registrations) {
+            reg.update().catch(() => {});
+          }
+        }).catch(() => {});
+      }
     }, CHECK_INTERVAL_MS);
 
     // Check on visibility change (e.g. user returns to this tab or unlocks screen)
@@ -125,6 +164,7 @@ export function useAutoUpdate() {
 
     return () => {
       clearInterval(interval);
+      if (cleanupSw) cleanupSw();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('online', handleOnline);

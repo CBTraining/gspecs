@@ -10,6 +10,7 @@ import BottomNav from './components/layout/BottomNav';
 import CompareBar from './components/comparison/CompareBar';
 import DeviceList from './components/DeviceList';
 import UpdateNotification from './components/common/UpdateNotification';
+import PwaInstallBanner from './components/common/PwaInstallBanner';
 import ScanningIndicator from './components/scanner/ScanningIndicator';
 import BarcodeNotFoundModal from './components/scanner/BarcodeNotFoundModal';
 import CameraErrorModal from './components/scanner/CameraErrorModal';
@@ -143,6 +144,7 @@ function App() {
         style={{ pointerEvents: selectedDevice ? 'none' : 'auto', paddingTop: '4rem' }}
       >
         <main className="container content-area">
+          <PwaInstallBanner />
           {loading ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
               Loading devices...

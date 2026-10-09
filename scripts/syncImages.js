@@ -221,6 +221,20 @@ const syncImages = async () => {
             }
           }
         }
+
+        // Ensure PWA icons exist from appicon.svg
+        const svgPath = path.join(__dirname, '../public/appicon.svg');
+        const icon192 = path.join(__dirname, '../public/appicon-192.png');
+        const icon512 = path.join(__dirname, '../public/appicon-512.png');
+        if (fs.existsSync(svgPath)) {
+          if (!fs.existsSync(icon192)) {
+            await sharp(svgPath).resize(192, 192).png().toFile(icon192);
+          }
+          if (!fs.existsSync(icon512)) {
+            await sharp(svgPath).resize(512, 512).png().toFile(icon512);
+          }
+        }
+
         console.log('Sync complete!');
         resolve();
       }
