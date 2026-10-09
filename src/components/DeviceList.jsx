@@ -73,7 +73,7 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
   [activeFilters]);
 
   return (
-    <div className="container">
+    <div className="device-list-container">
       {/* Internal Warning Banner */}
       <div className="internal-warning-banner" role="alert">
         <AlertTriangle size={20} />

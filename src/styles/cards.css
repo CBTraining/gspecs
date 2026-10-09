@@ -30,6 +30,7 @@
   z-index: -1;
   transition: opacity 0.3s ease;
   pointer-events: none;
+  overflow: hidden; /* Trap the 250% spinning square inside the card mask */
 }
 
 .card-glow-spinner {
@@ -294,9 +295,14 @@
     gap: 0.75rem;
   }
 
-  .card-wrapper, .card-glow-mask, .card {
+  .card-glow-mask {
+    display: none !important; /* Glow spinner is for desktop hover; hide on mobile to prevent overflow and save GPU */
+  }
+
+  .card-wrapper, .card {
     min-width: 0 !important;
     border-radius: 0.625rem !important;
+    overflow: hidden !important;
   }
 
   .card::after {
