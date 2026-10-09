@@ -252,11 +252,11 @@
 
 /* Embedded Detail Pane Styles for Desktop Split View */
 .detail-embedded-wrapper {
-  background-color: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: 1.25rem;
-  padding: 1.25rem;
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
   width: 100%;
   box-sizing: border-box;
 }
