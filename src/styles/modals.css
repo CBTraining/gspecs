@@ -149,6 +149,12 @@
   }
 }
 
+@media (min-width: 768px) {
+  .compare-bar {
+    bottom: 2rem;
+  }
+}
+
 /* Search & Quiz Row */
 .search-quiz-row {
   display: grid;
