@@ -352,4 +352,89 @@
   box-shadow: 0 0 15px rgba(49, 132, 254, 0.25);
 }
 
+/* Device List Header Controls (Responsive: Filters on right of Devices on mobile) */
+.device-list-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.device-list-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  order: 1;
+}
+
+.device-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  position: relative;
+  order: 2;
+}
+
+.filter-active-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  background-color: var(--accent-color);
+  border: 2px solid var(--bg-color);
+  border-radius: 50%;
+}
+
+.device-type-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  padding: 3px;
+  border-radius: 2rem;
+  box-shadow: var(--shadow-sm);
+  order: 3;
+  width: 100%;
+  justify-content: center;
+}
+
+.device-type-pill-btn {
+  border: none;
+  background-color: transparent;
+  color: var(--text-secondary);
+  padding: 0.4rem 1rem;
+  border-radius: 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.device-type-pill-btn.active {
+  background-color: var(--accent-color);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .device-list-title {
+    order: 1;
+  }
+  .device-type-pills {
+    order: 2;
+    width: auto;
+    justify-content: flex-start;
+  }
+  .device-filter-btn {
+    order: 3;
+  }
+}
+
 

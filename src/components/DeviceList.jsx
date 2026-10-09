@@ -82,40 +82,18 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
         </span>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', marginTop: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: '700' }}>Devices ({filteredDevices.length})</h2>
+      <div className="device-list-controls">
+        <h2 className="device-list-title">Devices ({filteredDevices.length})</h2>
         
         {/* Device Type Toggle Pills */}
-        <div 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.25rem',
-            backgroundColor: 'var(--surface-color)',
-            border: '1px solid var(--border-color)',
-            padding: '3px',
-            borderRadius: '2rem',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-        >
+        <div className="device-type-pills">
           {['All', 'Googlebook', 'Chromebook'].map((type) => {
             const isActive = currentDeviceType === type;
             return (
               <button
                 key={type}
                 onClick={() => handleSelectDeviceType(type)}
-                style={{
-                  border: 'none',
-                  backgroundColor: isActive ? 'var(--accent-color)' : 'transparent',
-                  color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                  padding: '0.4rem 1rem',
-                  borderRadius: '1.5rem',
-                  fontSize: '0.85rem',
-                  fontWeight: isActive ? '700' : '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  outline: 'none'
-                }}
+                className={`device-type-pill-btn ${isActive ? 'active' : ''}`}
               >
                 {type}
               </button>
@@ -124,23 +102,13 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
         </div>
 
         <button 
-          className="btn-secondary" 
+          className="btn-secondary device-filter-btn" 
           onClick={() => setIsFilterOpen(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', position: 'relative' }}
         >
           <Filter size={18} />
           <span>Filters</span>
           {totalActiveFilters > 0 && (
-            <span style={{
-              position: 'absolute',
-              top: '-4px',
-              right: '-4px',
-              width: '14px',
-              height: '14px',
-              backgroundColor: 'var(--accent-color)',
-              border: '2px solid var(--bg-color)',
-              borderRadius: '50%'
-            }} />
+            <span className="filter-active-badge" />
           )}
         </button>
       </div>
