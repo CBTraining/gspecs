@@ -175,7 +175,7 @@ function App() {
         transition={{ duration: 0.2, ease: "easeInOut" }}
         style={{ pointerEvents: (!isDesktop && selectedDevice) ? 'none' : 'auto', paddingTop: '4rem' }}
       >
-        <main className="container content-area">
+        <main className={`container content-area ${isDesktop && activeTab === 'devices' ? 'content-area-split' : ''}`}>
           <PwaInstallBanner />
           {loading ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
@@ -193,6 +193,7 @@ function App() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
+                className="tab-content-wrapper"
               >
                 {activeTab === 'glossary' ? (
                   <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Glossary...</div>}>
