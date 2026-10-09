@@ -58,7 +58,8 @@ export const GLOSSARY_MAP = {
   'intel core ultra': 'Intel’s latest hybrid performance processors featuring integrated NPU AI acceleration, premium Intel Arc graphics, and exceptional battery efficiency.',
   'snapdragon x elite': 'Qualcomm’s breakthrough ARM-based PC processor, delivering elite multi-core computing power, multi-day battery endurance, and a powerful 45 TOPS NPU.',
   'intel ai boost': 'Intel’s dedicated integrated Neural Processing Unit (NPU) for offloading on-device AI tasks, background effects, and generative AI features without draining battery.',
-  'ryzen ai': 'AMD’s dedicated neural processing engine (NPU) designed to accelerate generative AI, smart camera features, and local AI workloads efficiently.'
+  'ryzen ai': 'AMD’s dedicated neural processing engine (NPU) designed to accelerate generative AI, smart camera features, and local AI workloads efficiently.',
+  'external monitors': 'The maximum total displays supported by the CPU, including the device’s built-in screen. The actual number of external displays that can be connected is also limited by the physical ports available on the device.'
 };
 
 export const GLOSSARY_TITLES = {
@@ -95,7 +96,8 @@ export const GLOSSARY_TITLES = {
   'intel ai boost': 'Intel AI Boost',
   'ryzen ai': 'Ryzen AI',
   'audio jack': 'Audio Jack',
-  'headphone jack': 'Headphone Jack'
+  'headphone jack': 'Headphone Jack',
+  'external monitors': 'External Monitors'
 };
 
 export const getGlossaryTitle = (key) => {
@@ -156,6 +158,10 @@ export const GLOSSARY_CATEGORIES = [
       { 
         name: 'OLED', 
         text: 'Organic Light Emitting Diode: Premium screen tech where individual pixels light up and shut off completely, producing true black levels, vibrant colors, and cinematic depth.' 
+      },
+      {
+        name: 'External Monitors',
+        text: 'The maximum total displays supported by the CPU, including the device’s built-in screen. The actual number of external displays that can be connected is also limited by the physical ports available on the device.'
       }
     ]
   },

@@ -217,3 +217,29 @@
     justify-content: flex-start;
   }
 }
+
+.spec-group-disclaimer {
+  margin-top: 1.25rem;
+  padding: 0.75rem 0.875rem;
+  background-color: var(--surface-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.spec-disclaimer-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--accent-color);
+}
+
+.spec-disclaimer-text strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-right: 0.25rem;
+}

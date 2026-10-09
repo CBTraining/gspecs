@@ -17,8 +17,9 @@ export const KNOWN_SPEC_GROUPS = [
     ]
   },
   {
-    title: 'Screen',
+    title: 'Display',
     icon: Monitor,
+    disclaimer: "External monitor support reflects the maximum total displays supported by the CPU, which includes the device's built-in screen. The actual number of external monitors you can connect simultaneously is also limited by the available physical ports on the device.",
     fields: [
       { label: 'Screen Size', key: 'Screen Size' },
       { label: 'Screen Type', key: 'Screen Type' },
@@ -31,7 +32,8 @@ export const KNOWN_SPEC_GROUPS = [
       },
       { label: 'Color Accuracy', key: 'Color Accuracy' },
       { label: 'Touchscreen', key: 'Touchscreen?' },
-      { label: 'Pen Compatibility', key: 'Pen Compatibility?' }
+      { label: 'Pen Compatibility', key: 'Pen Compatibility?' },
+      { label: 'External Monitors', key: 'External Monitors' }
     ]
   },
   {
@@ -115,6 +117,7 @@ export const getDeviceSpecGroups = (device) => {
       groups.push({
         title: group.title,
         icon: group.icon,
+        disclaimer: group.disclaimer,
         items
       });
     }

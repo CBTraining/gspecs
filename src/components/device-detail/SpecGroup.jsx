@@ -1,4 +1,5 @@
 import React from 'react';
+import { Info } from 'lucide-react';
 import { SpecText } from './SpecText';
 
 const NON_PILL_LABELS = new Set([
@@ -11,7 +12,8 @@ const NON_PILL_LABELS = new Set([
   'persona extended',
   'extra features',
   'msrp',
-  'price'
+  'price',
+  'external monitors'
 ]);
 
 const getPillItems = (val, label) => {
@@ -44,17 +46,17 @@ const getPillItems = (val, label) => {
   return null;
 };
 
-export const SpecGroup = ({ title, icon: Icon, items }) => {
+export const SpecGroup = ({ title, icon: Icon, items, disclaimer }) => {
   const validItems = items.filter(item => item.value && String(item.value).toLowerCase() !== 'none' && String(item.value).trim() !== '');
   if (validItems.length === 0) return null;
 
   return (
-    <div className="specs-card" style={{ height: '100%' }}>
+    <div className="specs-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {Icon && <Icon size={20} style={{ color: 'var(--text-secondary)' }} />}
         <span>{title}</span>
       </h3>
-      <div className="specs-list">
+      <div className="specs-list" style={{ flex: 1 }}>
         {validItems.map((spec, idx) => {
           const pillItems = getPillItems(spec.value, spec.label);
           const isPill = pillItems && pillItems.length > 0;
@@ -88,6 +90,14 @@ export const SpecGroup = ({ title, icon: Icon, items }) => {
           );
         })}
       </div>
+      {disclaimer && (
+        <div className="spec-group-disclaimer">
+          <Info size={15} className="spec-disclaimer-icon" />
+          <span className="spec-disclaimer-text">
+            <strong>Disclaimer:</strong> {disclaimer}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

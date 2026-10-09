@@ -10,6 +10,13 @@ import BottomNav from './components/layout/BottomNav';
 import CompareBar from './components/comparison/CompareBar';
 import DeviceList from './components/DeviceList';
 import UpdateNotification from './components/common/UpdateNotification';
+import ScanningIndicator from './components/scanner/ScanningIndicator';
+import BarcodeNotFoundModal from './components/scanner/BarcodeNotFoundModal';
+import CameraErrorModal from './components/scanner/CameraErrorModal';
+
+import { useBarcodeScanner } from './hooks/useBarcodeScanner';
+import { findDeviceByBarcode } from './utils/barcodeMatcher';
+import './styles/scanner.css';
 
 const DeviceDetail = lazy(lazyWithRetry(() => import('./components/DeviceDetail')));
 const GlossaryView = lazy(lazyWithRetry(() => import('./components/GlossaryView')));
@@ -71,6 +78,40 @@ function App() {
     applyUpdate
   } = useAutoUpdate();
 
+  const [notFoundBarcode, setNotFoundBarcode] = useState(null);
+
+  const handleBarcodeScanned = useCallback(
+    (code) => {
+      const matched = findDeviceByBarcode(devices, code);
+      if (matched) {
+        setIsComparing(false);
+        setQuizOpen(false);
+        setNotFoundBarcode(null);
+        setSelectedDevice(matched);
+      } else {
+        setNotFoundBarcode(code);
+      }
+    },
+    [devices, setSelectedDevice]
+  );
+
+  const {
+    isScanning,
+    cameraError,
+    setCameraError,
+    startScan,
+    stopScan
+  } = useBarcodeScanner(handleBarcodeScanned);
+
+  const handleToggleScan = () => {
+    if (isScanning) {
+      stopScan();
+    } else {
+      setNotFoundBarcode(null);
+      startScan();
+    }
+  };
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSelectedDevice(null);
@@ -86,6 +127,13 @@ function App() {
         toggleTheme={toggleTheme}
         activeTab={activeTab}
         onTabChange={handleTabChange}
+        isScanning={isScanning}
+        onToggleScan={handleToggleScan}
+      />
+
+      <ScanningIndicator 
+        isScanning={isScanning} 
+        onCancel={stopScan} 
       />
 
       <motion.div 
@@ -195,6 +243,22 @@ function App() {
         isPaused={isPaused}
         onUpdateNow={applyUpdate}
         onPause={pauseCountdown}
+      />
+
+      <BarcodeNotFoundModal 
+        isOpen={!!notFoundBarcode}
+        scannedCode={notFoundBarcode}
+        onClose={() => setNotFoundBarcode(null)}
+        onScanAgain={() => {
+          setNotFoundBarcode(null);
+          startScan();
+        }}
+      />
+
+      <CameraErrorModal 
+        isOpen={!!cameraError}
+        error={cameraError}
+        onClose={() => setCameraError(null)}
       />
 
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />

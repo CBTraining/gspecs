@@ -14,6 +14,7 @@ export const SPEC_ROWS = [
   { label: 'Screen Brightness', key: 'Screen Brightness (nits)', icon: Monitor, suffix: ' nits' },
   { label: 'Touchscreen', key: 'Touchscreen?', icon: Monitor },
   { label: 'Pen Compatibility', key: 'Pen Compatibility?', icon: Monitor },
+  { label: 'External Monitors', key: 'External Monitors', icon: Monitor },
   { label: 'Battery Life', key: 'Battery Life', icon: Clock },
   { label: 'Weight', key: 'Weight', icon: Weight },
   { label: 'Form Factor', key: 'Formfactor', icon: Laptop },

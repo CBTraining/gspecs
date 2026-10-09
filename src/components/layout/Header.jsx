@@ -8,7 +8,9 @@ const Header = ({
   theme,
   toggleTheme,
   activeTab,
-  onTabChange
+  onTabChange,
+  isScanning = false,
+  onToggleScan
 }) => {
   return (
     <header className="app-header" style={{ zIndex: 150 }}>
@@ -72,12 +74,14 @@ const Header = ({
 
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <button 
-            className="btn-icon" 
-            onClick={() => alert('Barcode Scanner not developed yet.')} 
-            aria-label="Scan Barcode"
-            style={{ marginRight: '0.25rem' }}
+            className={`btn-icon ${isScanning ? 'scanning-active' : ''}`}
+            onClick={onToggleScan} 
+            aria-label={isScanning ? 'Cancel Barcode Scan' : 'Scan Barcode'}
+            style={{ marginRight: '0.25rem', position: 'relative' }}
+            title={isScanning ? 'Click to stop scanning' : 'Scan Barcode (SKU / UPC)'}
           >
             <Scan size={24} />
+            {isScanning && <span className="scanner-badge-pulse" />}
           </button>
           <button className="btn-icon" onClick={toggleTheme} aria-label="Toggle Theme">
             {theme === 'light' ? <Moon size={24} /> : <Sun size={24} />}

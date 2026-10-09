@@ -72,6 +72,7 @@ const DeviceDetail = ({ device, onBack }) => {
                 title={group.title} 
                 icon={group.icon} 
                 items={group.items} 
+                disclaimer={group.disclaimer}
               />
             ))}
           </div>
