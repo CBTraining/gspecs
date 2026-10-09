@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState, useCallback, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { useTheme } from './hooks/useTheme';
