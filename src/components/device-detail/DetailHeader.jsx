@@ -1,5 +1,5 @@
 import React from 'react';
-import { getPersonaColor } from '../../utils/persona';
+import { getPersonaStyle } from '../../utils/persona';
 
 const DetailHeader = ({ device }) => {
   return (
@@ -12,7 +12,7 @@ const DetailHeader = ({ device }) => {
         {device.Persona && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
             {device.Persona.split(',').map((p, i) => (
-              <span key={i} className="persona-tag" style={{ background: getPersonaColor(p) }}>
+              <span key={i} className="persona-tag" style={getPersonaStyle(p)}>
                 {p.trim()}
               </span>
             ))}

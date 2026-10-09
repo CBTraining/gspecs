@@ -1,7 +1,7 @@
 import React, { memo, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import ImageWithFallback from './common/ImageWithFallback';
-import { getPersonaColor } from '../utils/persona';
+import { getPersonaStyle } from '../utils/persona';
 import { isLaptopDevice } from '../utils/deviceUtils';
 
 export const DeviceCard = memo(({ 
@@ -110,7 +110,7 @@ export const DeviceCard = memo(({
             {personaTags.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.2rem' }}>
                 {personaTags.map((p, i) => (
-                  <span key={i} className="persona-tag" style={{ background: getPersonaColor(p) }}>
+                  <span key={i} className="persona-tag" style={getPersonaStyle(p)}>
                     {p}
                   </span>
                 ))}

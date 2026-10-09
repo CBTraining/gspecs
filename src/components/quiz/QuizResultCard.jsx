@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight, Check } from 'lucide-react';
-import { getPersonaColor } from '../../utils/persona';
+import { getPersonaStyle } from '../../utils/persona';
 import ImageWithFallback from '../common/ImageWithFallback';
 import { isLaptopDevice } from '../../utils/deviceUtils';
 
@@ -71,11 +71,10 @@ export const QuizResultCard = ({ device, matchPercentage, highlights = [], onSel
             {device.Persona && (
               <span style={{ 
                 fontSize: '0.7rem', 
-                color: '#ffffff', 
-                background: getPersonaColor(device.Persona), 
                 borderRadius: '0.25rem',
                 padding: '0.1rem 0.4rem',
-                fontWeight: '600'
+                fontWeight: '600',
+                ...getPersonaStyle(device.Persona)
               }}>
                 {device.Persona.split(',')[0]}
               </span>

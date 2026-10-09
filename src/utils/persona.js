@@ -1,26 +1,53 @@
-export const getPersonaColor = (persona) => {
+export const getPersonaStyle = (persona) => {
   const normalized = (persona?.split(',')[0] || persona || '').toLowerCase().trim();
   switch (normalized) {
     case 'everyday user':
-      // Blue fading to purple
-      return 'linear-gradient(135deg, #4285F4 0%, #9333EA 100%)';
+      return {
+        background: 'linear-gradient(90deg, #3186ff 0%, #A9A8FF 100%)',
+        color: '#ffffff',
+        textShadow: '0 1px 2px rgba(0, 0, 0, 0.35)'
+      };
     case 'student':
-      // Green fading to blue
-      return 'linear-gradient(135deg, #34A853 0%, #4285F4 100%)';
+      return {
+        background: 'linear-gradient(90deg, #0ebc5f 0%, #78C9FF 100%)',
+        color: '#ffffff',
+        textShadow: '0 1px 2px rgba(0, 0, 0, 0.35)'
+      };
     case 'content creator':
-      // Red fading to orange
-      return 'linear-gradient(135deg, #EA4335 0%, #FA7B17 100%)';
+      return {
+        background: 'linear-gradient(90deg, #ff4641 0%, #FF63A0 100%)',
+        color: '#ffffff',
+        textShadow: '0 1px 2px rgba(0, 0, 0, 0.35)'
+      };
     case 'professional':
-      // Orange fading to yellow
-      return 'linear-gradient(135deg, #E65100 0%, #F59E0B 100%)';
+      return {
+        background: 'linear-gradient(90deg, #ffcc00 0%, #FFB5E8 100%)',
+        color: '#1a1a1a',
+        textShadow: 'none'
+      };
     case 'gamer / power user':
     case 'gamer':
     case 'power user':
-      // Purple fading to pink
-      return 'linear-gradient(135deg, #9333EA 0%, #EC4899 100%)';
+      return {
+        background: 'linear-gradient(90deg, #6a64fd 0%, #64AFFF 100%)',
+        color: '#ffffff',
+        textShadow: '0 1px 2px rgba(0, 0, 0, 0.35)'
+      };
     default:
-      return 'linear-gradient(135deg, #4B5563 0%, #6B7280 100%)';
+      return {
+        background: 'linear-gradient(90deg, #4B5563 0%, #6B7280 100%)',
+        color: '#ffffff',
+        textShadow: '0 1px 2px rgba(0, 0, 0, 0.35)'
+      };
   }
+};
+
+export const getPersonaColor = (persona) => {
+  return getPersonaStyle(persona).background;
+};
+
+export const getPersonaTextColor = (persona) => {
+  return getPersonaStyle(persona).color;
 };
 
 export const getPersonaGradient = getPersonaColor;

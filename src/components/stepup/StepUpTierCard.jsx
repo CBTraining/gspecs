@@ -1,6 +1,6 @@
 import React from 'react';
 import { Check, ArrowRight, ArrowDown, Laptop, Smartphone } from 'lucide-react';
-import { getPersonaColor } from '../../utils/persona';
+import { getPersonaStyle } from '../../utils/persona';
 import { isLaptopDevice } from '../../utils/deviceUtils';
 
 export const StepUpTierCard = ({ 
@@ -83,7 +83,7 @@ export const StepUpTierCard = ({
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>{device.MSRP}</div>
                 {device.Persona && (
-                  <span className="persona-tag" style={{ background: getPersonaColor(device.Persona), marginTop: '0.25rem' }}>
+                  <span className="persona-tag" style={{ ...getPersonaStyle(device.Persona), marginTop: '0.25rem' }}>
                     {device.Persona}
                   </span>
                 )}
