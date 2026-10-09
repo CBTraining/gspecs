@@ -226,7 +226,7 @@ function App() {
                           onOpenQuiz={() => setQuizOpen(true)}
                         />
                       </div>
-                      <aside className="desktop-detail-pane">
+                      <aside className={`desktop-detail-pane ${!selectedDevice ? 'has-placeholder' : ''}`}>
                         {selectedDevice ? (
                           <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Device Details...</div>}>
                             <DeviceDetail 
@@ -244,9 +244,6 @@ function App() {
                             <p className="placeholder-text">
                               Click any Googlebook or Chromebook from the gallery on the left to inspect full hardware specifications, retail guidance, and basket add-ons.
                             </p>
-                            <div className="placeholder-pill">
-                              <span>Ready for inspection</span>
-                            </div>
                           </div>
                         )}
                       </aside>
