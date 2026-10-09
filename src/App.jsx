@@ -71,11 +71,7 @@ function App() {
 
   const {
     updateAvailable,
-    isUpdating,
-    countdown,
-    isPaused,
-    pauseCountdown,
-    applyUpdate
+    isUpdating
   } = useAutoUpdate();
 
   const [notFoundBarcode, setNotFoundBarcode] = useState(null);
@@ -237,12 +233,8 @@ function App() {
       </Suspense>
 
       <UpdateNotification 
-        show={updateAvailable}
-        countdown={countdown}
+        show={updateAvailable || isUpdating}
         isUpdating={isUpdating}
-        isPaused={isPaused}
-        onUpdateNow={applyUpdate}
-        onPause={pauseCountdown}
       />
 
       <BarcodeNotFoundModal 

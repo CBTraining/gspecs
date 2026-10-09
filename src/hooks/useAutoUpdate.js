@@ -2,18 +2,17 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
 const CHECK_INTERVAL_MS = 2 * 60 * 1000; // Check every 2 minutes
-const MIN_CHECK_GAP_MS = 60 * 1000; // Minimum 1 minute between focus/visibility checks
+const MIN_CHECK_GAP_MS = 30 * 1000; // Minimum 30 seconds between focus/visibility checks
+const LAST_RELOAD_KEY = 'gspecs_last_reloaded_version';
 
 export function useAutoUpdate() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [countdown, setCountdown] = useState(null);
-  const [isPaused, setIsPaused] = useState(false);
-  
+
   const lastCheckRef = useRef(0);
   const isCheckingRef = useRef(false);
 
-  const applyUpdate = useCallback(() => {
+  const applyUpdate = useCallback((newVersion) => {
     setIsUpdating(true);
     try {
       // Clear localStorage cache for gspecs data and chunk retries
@@ -23,8 +22,8 @@ export function useAutoUpdate() {
           localStorage.removeItem(key);
         }
       }
-      sessionStorage.clear();
 
+      // Clear CacheStorage (Service Worker / browser caches)
       if ('caches' in window) {
         caches.keys().then((names) => {
           names.forEach((name) => caches.delete(name));
@@ -34,8 +33,11 @@ export function useAutoUpdate() {
       console.warn('[AutoUpdate] Error clearing cache before reload:', e);
     }
 
-    // Reload with query params preserved (e.g. ?sku=...)
-    window.location.reload();
+    // Force cache-busting navigation to guarantee the browser gets the latest index.html
+    const targetVersion = newVersion || Date.now().toString();
+    const url = new URL(window.location.href);
+    url.searchParams.set('_v', targetVersion);
+    window.location.replace(url.toString());
   }, []);
 
   const checkForUpdate = useCallback(async () => {
@@ -58,12 +60,17 @@ export function useAutoUpdate() {
         const data = await res.json();
         if (data && data.version && data.version !== APP_VERSION && data.version !== 'initial' && APP_VERSION !== 'dev') {
           console.log(`[AutoUpdate] New version detected: ${data.version} (current: ${APP_VERSION})`);
-          setUpdateAvailable(true);
 
-          // If the user is currently not viewing the tab (tab is in background), update immediately
-          if (document.visibilityState === 'hidden') {
-            applyUpdate();
+          // Guard against infinite reload loops if edge CDN serves stale HTML temporarily
+          const lastReloadedVersion = sessionStorage.getItem(LAST_RELOAD_KEY);
+          if (lastReloadedVersion !== data.version) {
+            sessionStorage.setItem(LAST_RELOAD_KEY, data.version);
+            setUpdateAvailable(true);
+            applyUpdate(data.version);
           }
+        } else if (data && data.version === APP_VERSION) {
+          // Running the latest version, reset reload guard
+          sessionStorage.removeItem(LAST_RELOAD_KEY);
         }
       }
     } catch (err) {
@@ -73,11 +80,20 @@ export function useAutoUpdate() {
     }
   }, [applyUpdate]);
 
+  // Clean up cache-busting `_v` query param from address bar on mount
   useEffect(() => {
-    // Initial check shortly after load
-    const initialTimer = setTimeout(() => {
-      checkForUpdate();
-    }, 4000);
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('_v')) {
+      params.delete('_v');
+      const cleanQuery = params.toString() ? `?${params.toString()}` : '';
+      const cleanUrl = window.location.pathname + cleanQuery + window.location.hash;
+      window.history.replaceState({}, '', cleanUrl);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Immediate check on load/refresh (catches updates right away without delay)
+    checkForUpdate();
 
     // Periodic check every 2 minutes
     const interval = setInterval(() => {
@@ -86,14 +102,8 @@ export function useAutoUpdate() {
 
     // Check on visibility change (e.g. user returns to this tab or unlocks screen)
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        if (updateAvailable) {
-          applyUpdate();
-          return;
-        }
-        if (Date.now() - lastCheckRef.current > MIN_CHECK_GAP_MS) {
-          checkForUpdate();
-        }
+      if (document.visibilityState === 'visible' && Date.now() - lastCheckRef.current > MIN_CHECK_GAP_MS) {
+        checkForUpdate();
       }
     };
 
@@ -114,44 +124,16 @@ export function useAutoUpdate() {
     window.addEventListener('online', handleOnline);
 
     return () => {
-      clearTimeout(initialTimer);
       clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('online', handleOnline);
     };
-  }, [checkForUpdate, updateAvailable, applyUpdate]);
-
-  // When update is available and user is looking at the screen, run a gentle countdown
-  useEffect(() => {
-    if (!updateAvailable || isPaused) return;
-
-    setCountdown(5);
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev === null) return 5;
-        if (prev <= 1) {
-          clearInterval(timer);
-          applyUpdate();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [updateAvailable, isPaused, applyUpdate]);
-
-  const pauseCountdown = useCallback(() => {
-    setIsPaused(true);
-  }, []);
+  }, [checkForUpdate]);
 
   return {
     updateAvailable,
     isUpdating,
-    countdown,
-    isPaused,
-    pauseCountdown,
     applyUpdate,
     checkForUpdate
   };

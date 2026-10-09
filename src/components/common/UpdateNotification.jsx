@@ -1,18 +1,11 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, RefreshCw, X } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
-export default function UpdateNotification({
-  show,
-  countdown,
-  isUpdating,
-  isPaused,
-  onUpdateNow,
-  onPause
-}) {
+export default function UpdateNotification({ show, isUpdating }) {
   return (
     <AnimatePresence>
-      {show && (
+      {(show || isUpdating) && (
         <div
           style={{
             position: 'fixed',
@@ -31,36 +24,34 @@ export default function UpdateNotification({
             initial={{ opacity: 0, y: -24, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -24, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
             style={{
               width: '100%',
-              maxWidth: '520px',
+              maxWidth: '440px',
               pointerEvents: 'auto'
             }}
           >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '0.75rem',
-              padding: '0.75rem 1rem',
-              background: 'var(--surface-color)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid var(--accent-color)',
-              borderRadius: '1rem',
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.75rem 1.15rem',
+                background: 'var(--surface-color)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1.5px solid var(--accent-color)',
+                borderRadius: '1rem',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 0 15px rgba(49, 132, 254, 0.25)',
+                color: 'var(--text-primary)'
+              }}
+            >
               <div
                 style={{
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  backgroundColor: 'rgba(26, 115, 232, 0.12)',
+                  backgroundColor: 'rgba(49, 132, 254, 0.12)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -68,72 +59,26 @@ export default function UpdateNotification({
                   flexShrink: 0
                 }}
               >
-                {isUpdating ? (
-                  <RefreshCw size={16} className="spin-animation" style={{ animation: 'spin 1s linear infinite' }} />
-                ) : (
-                  <Sparkles size={16} />
-                )}
+                <RefreshCw
+                  size={18}
+                  style={{
+                    animation: 'spin 1.2s linear infinite'
+                  }}
+                />
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                  {isUpdating ? 'Updating G-Specs...' : 'New Version Available'}
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: '0.925rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  Updating to latest version...
                 </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.2, marginTop: '2px' }}>
-                  {isUpdating
-                    ? 'Applying the latest updates...'
-                    : !isPaused && countdown !== null && countdown > 0
-                    ? `Updating automatically in ${countdown}s`
-                    : 'Ready to reload with latest features'}
+                <span style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>
+                  Loading the newest catalog and features
                 </span>
               </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-              {!isUpdating && (
-                <>
-                  {!isPaused && (
-                    <button
-                      onClick={onPause}
-                      style={{
-                        padding: '0.4rem 0.65rem',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        background: 'transparent',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '0.5rem',
-                        color: 'var(--text-secondary)',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Later
-                    </button>
-                  )}
-                  <button
-                    onClick={onUpdateNow}
-                    style={{
-                      padding: '0.4rem 0.85rem',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      background: 'var(--accent-color)',
-                      border: 'none',
-                      borderRadius: '0.5rem',
-                      color: '#ffffff',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem'
-                    }}
-                  >
-                    Update Now
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    )}
-  </AnimatePresence>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }
