@@ -16,13 +16,29 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setLocalFilters(activeFilters || {});
+
+      window.history.pushState({ gspecsModal: 'filter' }, '');
+      const handlePop = () => {
+        onClose();
+      };
+      window.addEventListener('popstate', handlePop, { once: true });
+
+      return () => {
+        window.removeEventListener('popstate', handlePop);
+        document.body.style.overflow = '';
+      };
     } else {
       document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen, activeFilters]);
+  }, [isOpen, activeFilters, onClose]);
+
+  const handleClose = () => {
+    if (window.history.state && window.history.state.gspecsModal === 'filter') {
+      window.history.back();
+    } else {
+      onClose();
+    }
+  };
 
   // Extract unique values for each category
   const filterOptions = FILTER_CATEGORIES.reduce((acc, cat) => {
@@ -75,13 +91,13 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
       })
     );
     onApply(cleanedFilters);
-    onClose();
+    handleClose();
   };
 
   const handleClear = () => {
     setLocalFilters({});
     onApply({});
-    onClose();
+    handleClose();
   };
 
   const priceRange = localFilters.priceRange || [catalogMinPrice, catalogMaxPrice];
@@ -91,7 +107,7 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
       {isOpen && (
         <motion.div 
           className="modal-backdrop" 
-          onClick={onClose}
+          onClick={handleClose}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -106,7 +122,7 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
           >
             <div className="filter-header">
               <h3>Filters</h3>
-              <button className="btn-icon" onClick={onClose}>
+              <button className="btn-icon" onClick={handleClose}>
                 <X size={24} />
               </button>
             </div>

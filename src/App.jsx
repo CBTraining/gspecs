@@ -16,6 +16,8 @@ import BarcodeNotFoundModal from './components/scanner/BarcodeNotFoundModal';
 import CameraErrorModal from './components/scanner/CameraErrorModal';
 
 import { useBarcodeScanner } from './hooks/useBarcodeScanner';
+import { useBackNavigation } from './hooks/useBackNavigation';
+import BackExitToast from './components/common/BackExitToast';
 import { findDeviceByBarcode } from './utils/barcodeMatcher';
 import './styles/scanner.css';
 
@@ -109,7 +111,31 @@ function App() {
     }
   };
 
+  const {
+    showExitToast,
+    handleBack
+  } = useBackNavigation({
+    selectedDevice,
+    setSelectedDevice,
+    activeTab,
+    setActiveTab,
+    isComparing,
+    setIsComparing,
+    quizOpen,
+    setQuizOpen,
+    isScanning,
+    stopScan,
+    notFoundBarcode,
+    setNotFoundBarcode,
+    cameraError,
+    setCameraError
+  });
+
   const handleTabChange = (tab) => {
+    if (tab === 'devices' && activeTab !== 'devices') {
+      handleBack();
+      return;
+    }
     setActiveTab(tab);
     setSelectedDevice(null);
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -119,7 +145,7 @@ function App() {
     <div className="app-container">
       <Header 
         selectedDevice={selectedDevice}
-        onBack={() => setSelectedDevice(null)}
+        onBack={handleBack}
         theme={theme}
         toggleTheme={toggleTheme}
         activeTab={activeTab}
@@ -130,7 +156,7 @@ function App() {
 
       <ScanningIndicator 
         isScanning={isScanning} 
-        onCancel={stopScan} 
+        onCancel={handleBack} 
       />
 
       <motion.div 
@@ -195,7 +221,7 @@ function App() {
             <DeviceDetail 
               key="detail"
               device={selectedDevice} 
-              onBack={() => setSelectedDevice(null)} 
+              onBack={handleBack} 
             />
           </Suspense>
         )}
@@ -217,7 +243,7 @@ function App() {
         {isComparing && (
           <CompareModal 
             isOpen={isComparing} 
-            onClose={() => setIsComparing(false)} 
+            onClose={handleBack} 
             devices={comparisonDevices} 
           />
         )}
@@ -227,7 +253,7 @@ function App() {
         {quizOpen && (
           <QuizModal 
             isOpen={quizOpen} 
-            onClose={() => setQuizOpen(false)} 
+            onClose={handleBack} 
             devices={devices} 
             onSelectDevice={setSelectedDevice} 
           />
@@ -242,7 +268,7 @@ function App() {
       <BarcodeNotFoundModal 
         isOpen={!!notFoundBarcode}
         scannedCode={notFoundBarcode}
-        onClose={() => setNotFoundBarcode(null)}
+        onClose={handleBack}
         onScanAgain={() => {
           setNotFoundBarcode(null);
           startScan();
@@ -252,8 +278,10 @@ function App() {
       <CameraErrorModal 
         isOpen={!!cameraError}
         error={cameraError}
-        onClose={() => setCameraError(null)}
+        onClose={handleBack}
       />
+
+      <BackExitToast show={showExitToast} />
 
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
