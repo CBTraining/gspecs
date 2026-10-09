@@ -17,8 +17,10 @@ import CameraErrorModal from './components/scanner/CameraErrorModal';
 
 import { useBarcodeScanner } from './hooks/useBarcodeScanner';
 import { useBackNavigation } from './hooks/useBackNavigation';
+import { useIsDesktop } from './hooks/useIsDesktop';
 import BackExitToast from './components/common/BackExitToast';
 import { findDeviceByBarcode } from './utils/barcodeMatcher';
+import { Laptop } from 'lucide-react';
 import './styles/scanner.css';
 
 const DeviceDetail = lazy(lazyWithRetry(() => import('./components/DeviceDetail')));
@@ -79,6 +81,8 @@ function App() {
 
   const [notFoundBarcode, setNotFoundBarcode] = useState(null);
 
+  const isDesktop = useIsDesktop(1024);
+
   const handleBarcodeScanned = useCallback(
     (code) => {
       const matched = findDeviceByBarcode(devices, code);
@@ -87,11 +91,12 @@ function App() {
         setQuizOpen(false);
         setNotFoundBarcode(null);
         setSelectedDevice(matched);
+        if (isDesktop) setActiveTab('devices');
       } else {
         setNotFoundBarcode(code);
       }
     },
-    [devices, setSelectedDevice]
+    [devices, setSelectedDevice, isDesktop]
   );
 
   const {
@@ -152,6 +157,7 @@ function App() {
         onTabChange={handleTabChange}
         isScanning={isScanning}
         onToggleScan={handleToggleScan}
+        isDesktop={isDesktop}
       />
 
       <ScanningIndicator 
@@ -162,12 +168,12 @@ function App() {
       <motion.div 
         className="main-layout"
         animate={{
-          filter: selectedDevice ? 'blur(12px)' : 'blur(0px)',
-          opacity: selectedDevice ? 0.4 : 1,
-          scale: selectedDevice ? 0.98 : 1,
+          filter: (!isDesktop && selectedDevice) ? 'blur(12px)' : 'blur(0px)',
+          opacity: (!isDesktop && selectedDevice) ? 0.4 : 1,
+          scale: (!isDesktop && selectedDevice) ? 0.98 : 1,
         }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        style={{ pointerEvents: selectedDevice ? 'none' : 'auto', paddingTop: '4rem' }}
+        style={{ pointerEvents: (!isDesktop && selectedDevice) ? 'none' : 'auto', paddingTop: '4rem' }}
       >
         <main className="container content-area">
           <PwaInstallBanner />
@@ -194,20 +200,66 @@ function App() {
                   </Suspense>
                 ) : activeTab === 'stepup' ? (
                   <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Step Up Guide...</div>}>
-                    <StepUpChart devices={devices} onSelectDevice={setSelectedDevice} />
+                    <StepUpChart 
+                      devices={devices} 
+                      onSelectDevice={(dev) => {
+                        setSelectedDevice(dev);
+                        if (isDesktop) setActiveTab('devices');
+                      }} 
+                    />
                   </Suspense>
                 ) : activeTab === 'appindex' ? (
                   <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading App Index...</div>}>
                     <AppIndexView />
                   </Suspense>
                 ) : (
-                  <DeviceList 
-                    devices={devices} 
-                    onSelectDevice={setSelectedDevice} 
-                    comparisonDevices={comparisonDevices}
-                    onToggleComparison={toggleComparison}
-                    onOpenQuiz={() => setQuizOpen(true)}
-                  />
+                  isDesktop ? (
+                    <div className="desktop-split-layout">
+                      <div className="desktop-gallery-pane">
+                        <DeviceList 
+                          devices={devices} 
+                          onSelectDevice={setSelectedDevice} 
+                          selectedDevice={selectedDevice}
+                          comparisonDevices={comparisonDevices}
+                          onToggleComparison={toggleComparison}
+                          onOpenQuiz={() => setQuizOpen(true)}
+                        />
+                      </div>
+                      <aside className="desktop-detail-pane">
+                        {selectedDevice ? (
+                          <Suspense fallback={<div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>Loading Device Details...</div>}>
+                            <DeviceDetail 
+                              device={selectedDevice} 
+                              onBack={() => setSelectedDevice(null)} 
+                              embedded={true}
+                            />
+                          </Suspense>
+                        ) : (
+                          <div className="desktop-detail-placeholder glass-panel">
+                            <div className="placeholder-icon-wrap">
+                              <Laptop size={36} />
+                            </div>
+                            <h3 className="placeholder-title">Select a Device</h3>
+                            <p className="placeholder-text">
+                              Click any Googlebook or Chromebook from the gallery on the left to inspect full hardware specifications, retail guidance, and basket add-ons.
+                            </p>
+                            <div className="placeholder-pill">
+                              <span>Ready for inspection</span>
+                            </div>
+                          </div>
+                        )}
+                      </aside>
+                    </div>
+                  ) : (
+                    <DeviceList 
+                      devices={devices} 
+                      onSelectDevice={setSelectedDevice} 
+                      selectedDevice={selectedDevice}
+                      comparisonDevices={comparisonDevices}
+                      onToggleComparison={toggleComparison}
+                      onOpenQuiz={() => setQuizOpen(true)}
+                    />
+                  )
                 )}
               </motion.div>
             </AnimatePresence>
@@ -215,8 +267,9 @@ function App() {
         </main>
       </motion.div>
 
+      {/* Mobile Full-Screen Overlay View (only on non-desktop) */}
       <AnimatePresence>
-        {selectedDevice && (
+        {!isDesktop && selectedDevice && (
           <Suspense fallback={null}>
             <DeviceDetail 
               key="detail"

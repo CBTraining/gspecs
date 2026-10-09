@@ -7,7 +7,14 @@ import QuizBanner from './quiz/QuizBanner';
 import { filterDevices } from '../utils/filterDevices';
 import { isLaptopDevice } from '../utils/deviceUtils';
 
-const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleComparison, onOpenQuiz }) => {
+const DeviceList = ({ 
+  devices, 
+  onSelectDevice, 
+  selectedDevice = null,
+  comparisonDevices = [], 
+  onToggleComparison, 
+  onOpenQuiz 
+}) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState(() => {
@@ -168,6 +175,11 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
               {groupedDevices[brand].map((device) => {
                 const isLaptop = isLaptopDevice(device);
                 const isSelectedForCompare = comparisonDevices.some(d => d.SKU === device.SKU);
+                const isSelected = !!selectedDevice && (
+                  selectedDevice.SKU && device.SKU 
+                    ? selectedDevice.SKU === device.SKU 
+                    : selectedDevice['Device Name'] === device['Device Name']
+                );
 
                 return (
                   <DeviceCard
@@ -176,6 +188,7 @@ const DeviceList = ({ devices, onSelectDevice, comparisonDevices = [], onToggleC
                     brand={brand}
                     isLaptop={isLaptop}
                     isSelectedForCompare={isSelectedForCompare}
+                    isSelected={isSelected}
                     onSelectDevice={onSelectDevice}
                     onToggleComparison={onToggleComparison}
                   />

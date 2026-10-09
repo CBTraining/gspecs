@@ -10,14 +10,15 @@ const Header = ({
   activeTab,
   onTabChange,
   isScanning = false,
-  onToggleScan
+  onToggleScan,
+  isDesktop = false
 }) => {
   return (
     <header className="app-header" style={{ zIndex: 150 }}>
       <div className="app-header-content">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <AnimatePresence>
-            {selectedDevice && (
+            {!isDesktop && selectedDevice && (
               <motion.button 
                 initial={{ opacity: 0, scale: 0.8, width: 0 }}
                 animate={{ opacity: 1, scale: 1, width: 'auto' }}

@@ -9,6 +9,7 @@ export const DeviceCard = memo(({
   brand, 
   isLaptop: propIsLaptop, 
   isSelectedForCompare, 
+  isSelected = false,
   onSelectDevice, 
   onToggleComparison 
 }) => {
@@ -40,7 +41,7 @@ export const DeviceCard = memo(({
 
   return (
     <motion.div 
-      className="card-wrapper"
+      className={`card-wrapper ${isSelected ? 'card-selected-active' : ''}`}
       onClick={() => onSelectDevice(device)}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}

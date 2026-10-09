@@ -249,3 +249,82 @@
   font-weight: 600;
   margin-right: 0.25rem;
 }
+
+/* Embedded Detail Pane Styles for Desktop Split View */
+.detail-embedded-wrapper {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.detail-embedded-content {
+  width: 100%;
+}
+
+.detail-embedded-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-embedded-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.detail-embedded-close-btn {
+  color: var(--text-secondary);
+  padding: 0.35rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-embedded-close-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--surface-hover);
+}
+
+.desktop-detail-pane .specs-grid {
+  grid-template-columns: 1fr !important;
+  gap: 1rem;
+}
+
+.desktop-detail-pane .detail-header-card {
+  margin-bottom: 1rem;
+  padding: 1.25rem;
+}
+
+.desktop-detail-pane .detail-image-card {
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  min-height: 200px;
+}
+
+.desktop-detail-pane .detail-large-image {
+  max-height: 200px;
+  margin-bottom: 1rem;
+}
+
+.desktop-detail-pane .action-buttons-row {
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 0.5rem;
+}
