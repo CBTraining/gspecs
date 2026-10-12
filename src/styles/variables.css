@@ -33,6 +33,7 @@
   --text-secondary: #4b5563;
   --border-color: #e5e7eb;
   --accent-color: #3184fe;
+  --card-spec-color: #5f6368;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -51,6 +52,7 @@
   --text-secondary: #9ca3af;
   --border-color: #333333;
   --accent-color: #3184fe;
+  --card-spec-color: #e0e0e0;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -1px rgba(0, 0, 0, 0.5);

@@ -361,9 +361,13 @@
 .device-brand-text {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--accent-color);
+  color: var(--card-spec-color, #5f6368);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.dark .device-brand-text {
+  color: var(--card-spec-color, #e0e0e0);
 }
 
 .device-title-text {

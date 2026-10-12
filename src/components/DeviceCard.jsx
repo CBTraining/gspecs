@@ -39,6 +39,12 @@ export const DeviceCard = memo(({
     return device.Persona ? device.Persona.split(',').map(p => p.trim()).filter(Boolean) : [];
   }, [device.Persona]);
 
+  const ramStorage = useMemo(() => {
+    const ram = String(device['RAM/Memory'] || device.RAM || '').trim();
+    const storage = String(device.Storage || '').trim();
+    return [ram, storage].filter(Boolean).join(' / ') || device.Formfactor || brand;
+  }, [device, brand]);
+
   return (
     <motion.div 
       className={`card-wrapper ${isSelected ? 'card-selected-active' : ''}`}
@@ -102,7 +108,7 @@ export const DeviceCard = memo(({
             />
           </div>
           <div className="device-card-info-vertical">
-            <div className="device-brand-text">{device.Formfactor || brand}</div>
+            <div className="device-brand-text">{ramStorage}</div>
             <h3 className="device-title-text">
               {device['Device Name']}
             </h3>
