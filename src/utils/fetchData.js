@@ -152,6 +152,63 @@ export const fetchAccessoriesData = async (forceNetwork = false) => {
   }
 };
 
+const normalizeDeviceRow = (row) => {
+  if (!row || typeof row !== 'object') return row;
+  const cleaned = { ...row };
+
+  for (const [k, v] of Object.entries(cleaned)) {
+    if (typeof v === 'string') {
+      const trimmed = v.trim();
+      if (/^check data$/i.test(trimmed)) {
+        cleaned[k] = '';
+      } else {
+        cleaned[k] = trimmed;
+      }
+    }
+  }
+
+  // Normalize RAM/Memory ("8 gigabytes" -> "8GB")
+  if (cleaned['RAM/Memory']) {
+    cleaned['RAM/Memory'] = cleaned['RAM/Memory']
+      .replace(/\s*gigabytes?\b/i, 'GB')
+      .replace(/^(\d+)\s+GB$/i, '$1GB');
+  }
+
+  // Normalize Screen Size ("14 inches" / "14”" -> '14"')
+  if (cleaned['Screen Size']) {
+    cleaned['Screen Size'] = cleaned['Screen Size']
+      .replace(/\s*inches?\b/i, '"')
+      .replace(/[”″]/g, '"');
+  }
+
+  // Normalize Weight (lbs) ("3.26 pounds" -> "3.26 lbs")
+  if (cleaned['Weight (lbs)']) {
+    cleaned['Weight (lbs)'] = cleaned['Weight (lbs)']
+      .replace(/\s*pounds?\b/i, ' lbs');
+  }
+
+  // Normalize unreduced Aspect Ratio ("683:384" -> "16:9")
+  if (cleaned['Aspect Ratio'] === '683:384') {
+    cleaned['Aspect Ratio'] = '16:9';
+  }
+
+  // Clean trailing ", 0" in Ports
+  if (cleaned['Ports']) {
+    cleaned['Ports'] = cleaned['Ports']
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s && s !== '0' && !/^check data$/i.test(s))
+      .join(', ');
+  }
+
+  // Fix entry-level Acer Chromebook 315 (SKU 6667579, 4GB/Kompanio 540) persona mismatch
+  if (cleaned['SKU'] === '6667579' && cleaned['Persona'] === 'Professional, Content Creator') {
+    cleaned['Persona'] = 'Everyday User, Student';
+  }
+
+  return cleaned;
+};
+
 export const fetchDeviceData = (onBackgroundUpdate, forceNetwork = false) => {
   // Concurrently fetch accessory data in background
   fetchAccessoriesData(forceNetwork).catch(() => {});
@@ -165,7 +222,7 @@ export const fetchDeviceData = (onBackgroundUpdate, forceNetwork = false) => {
     if (cached) {
       const { timestamp, data } = JSON.parse(cached);
       if (Array.isArray(data) && data.length > 0) {
-        staleData = data;
+        staleData = data.map(normalizeDeviceRow);
         if (!forceNetwork && Date.now() - timestamp < CACHE_TTL_MS) {
           isCacheFresh = true;
         }
@@ -206,12 +263,13 @@ export const fetchDeviceData = (onBackgroundUpdate, forceNetwork = false) => {
       const validData = (rawRows || [])
         .filter(row => row['Device Name'] && isDeviceActive(row))
         .map(row => {
-          const { image, driveThumbnail } = convertDriveLink(row['Device Image'], row['Device Name']);
+          const normalized = normalizeDeviceRow(row);
+          const { image, driveThumbnail } = convertDriveLink(normalized['Device Image'], normalized['Device Name']);
           return {
-            ...row,
+            ...normalized,
             'Device Image': image,
             'Drive Thumbnail': driveThumbnail,
-            'Barcode': resolveBarcode(row) || row['Barcode']
+            'Barcode': resolveBarcode(normalized) || normalized['Barcode']
           };
         });
 

@@ -176,8 +176,36 @@ const syncImages = async () => {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
-        // Populate Barcode column with Column L barcode URL
+        // Normalize row values and populate Barcode column with Column L barcode URL
         results.data.forEach(row => {
+          for (const [k, v] of Object.entries(row)) {
+            if (typeof v === 'string') {
+              const trimmed = v.trim();
+              row[k] = /^check data$/i.test(trimmed) ? '' : trimmed;
+            }
+          }
+          if (row['RAM/Memory']) {
+            row['RAM/Memory'] = row['RAM/Memory'].replace(/\s*gigabytes?\b/i, 'GB').replace(/^(\d+)\s+GB$/i, '$1GB');
+          }
+          if (row['Screen Size']) {
+            row['Screen Size'] = row['Screen Size'].replace(/\s*inches?\b/i, '"').replace(/[”″]/g, '"');
+          }
+          if (row['Weight (lbs)']) {
+            row['Weight (lbs)'] = row['Weight (lbs)'].replace(/\s*pounds?\b/i, ' lbs');
+          }
+          if (row['Aspect Ratio'] === '683:384') {
+            row['Aspect Ratio'] = '16:9';
+          }
+          if (row['Ports']) {
+            row['Ports'] = row['Ports']
+              .split(',')
+              .map(s => s.trim())
+              .filter(s => s && s !== '0' && !/^check data$/i.test(s))
+              .join(', ');
+          }
+          if (row['SKU'] === '6667579' && row['Persona'] === 'Professional, Content Creator') {
+            row['Persona'] = 'Everyday User, Student';
+          }
           row['Barcode'] = resolveBarcode(row);
         });
 

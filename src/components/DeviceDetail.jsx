@@ -45,29 +45,37 @@ const DeviceDetail = ({ device, onBack, embedded = false }) => {
       <DetailActions device={device} />
 
       <div className="specs-grid">
-        {(device['About'] || device['about']) && (
-          <div className="specs-card" style={{ height: '100%' }}>
-            <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Info size={20} style={{ color: 'var(--text-secondary)' }} />
-              <span>About</span>
-            </h3>
-            <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-              {device['About'] || device['about']}
-            </p>
-          </div>
-        )}
+        {(() => {
+          const aboutText = String(device['About'] || device['about'] || '').trim();
+          const hasAbout = aboutText && !['none', 'n/a', 'check data'].includes(aboutText.toLowerCase());
+          return hasAbout ? (
+            <div className="specs-card" style={{ height: '100%' }}>
+              <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Info size={20} style={{ color: 'var(--text-secondary)' }} />
+                <span>About</span>
+              </h3>
+              <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                {aboutText}
+              </p>
+            </div>
+          ) : null;
+        })()}
 
-        {device['Persona Extended'] && (
-          <div className="specs-card" style={{ height: '100%' }}>
-            <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <User size={20} style={{ color: 'var(--text-secondary)' }} />
-              <span>Persona Overview</span>
-            </h3>
-            <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-              {device['Persona Extended']}
-            </p>
-          </div>
-        )}
+        {(() => {
+          const personaExt = String(device['Persona Extended'] || '').trim();
+          const hasPersonaExt = personaExt && !['none', 'n/a', 'check data'].includes(personaExt.toLowerCase());
+          return hasPersonaExt ? (
+            <div className="specs-card" style={{ height: '100%' }}>
+              <h3 className="specs-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <User size={20} style={{ color: 'var(--text-secondary)' }} />
+                <span>Persona Overview</span>
+              </h3>
+              <p style={{ fontSize: '0.95rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                {personaExt}
+              </p>
+            </div>
+          ) : null;
+        })()}
 
         <DetailBasketSection recommendations={device['Basket Recommendations']} />
 

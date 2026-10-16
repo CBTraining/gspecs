@@ -60,7 +60,13 @@ export function filterDevices(devices, activeFilters = {}, searchQuery = '') {
     if (hasCategoryFilters) {
       for (let i = 0; i < categoryFilters.length; i++) {
         const [key, selectedValues] = categoryFilters[i];
-        if (!selectedValues.includes(device[key])) {
+        const rawVal = String(device[key] || '').trim();
+        if (key === 'Persona') {
+          const devicePersonas = rawVal.split(',').map(p => p.trim());
+          if (!selectedValues.some(sel => devicePersonas.includes(sel) || rawVal === sel)) {
+            return false;
+          }
+        } else if (!selectedValues.includes(rawVal) && !selectedValues.includes(device[key])) {
           return false;
         }
       }

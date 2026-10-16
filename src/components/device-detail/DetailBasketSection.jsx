@@ -5,7 +5,10 @@ import BasketItemTag from './BasketItemTag';
 const DetailBasketSection = ({ recommendations }) => {
   if (!recommendations) return null;
 
-  const items = recommendations.split(',').map(item => item.trim()).filter(Boolean);
+  const items = String(recommendations)
+    .split(',')
+    .map(item => item.trim())
+    .filter(item => item && !['none', 'n/a', 'check data', '0'].includes(item.toLowerCase()));
   if (items.length === 0) return null;
 
   return (

@@ -64,21 +64,21 @@ export const QuizResultCard = ({ device, matchPercentage, highlights = [], onSel
             {device['Device Name']}
           </h5>
 
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              {device.MSRP || 'Pricing in-store'}
-            </span>
-            {device.Persona && (
-              <span style={{ 
-                fontSize: '0.7rem', 
-                borderRadius: '0.25rem',
-                padding: '0.1rem 0.4rem',
-                fontWeight: '600',
-                ...getPersonaStyle(device.Persona)
-              }}>
-                {device.Persona.split(',')[0]}
+          <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {device.MSRP && (
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {device.MSRP}
               </span>
             )}
+            {device.Persona && device.Persona.split(',').map(p => p.trim()).filter(Boolean).map((p, i) => (
+              <span
+                key={i}
+                className="persona-tag"
+                style={getPersonaStyle(p)}
+              >
+                {p}
+              </span>
+            ))}
           </div>
         </div>
 

@@ -42,18 +42,34 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
 
   // Extract unique values for each category
   const filterOptions = FILTER_CATEGORIES.reduce((acc, cat) => {
-    let uniqueVals = [...new Set(devices.map(d => d[cat.key]).filter(v => v && v.toLowerCase() !== 'none'))];
-    if (cat.key === 'Device') {
+    const rawVals = devices
+      .map(d => d[cat.key])
+      .filter(v => v && !['none', 'n/a', 'check data', '0'].includes(String(v).trim().toLowerCase()));
+
+    let uniqueVals;
+    if (cat.key === 'Persona') {
+      const personaSet = new Set();
+      rawVals.forEach(v => {
+        String(v)
+          .split(',')
+          .map(p => p.trim())
+          .filter(Boolean)
+          .forEach(p => personaSet.add(p));
+      });
+      uniqueVals = [...personaSet];
+    } else if (cat.key === 'Device') {
       const normalizedSet = new Set();
-      uniqueVals.forEach(v => {
+      rawVals.forEach(v => {
         const norm = v.trim().replace(/s$/, '');
         if (norm.toLowerCase() === 'chromerbook' || norm.toLowerCase() === 'chromebook') normalizedSet.add('Chromebook');
         else if (norm.toLowerCase() === 'gragglebook' || norm.toLowerCase() === 'googlebook') normalizedSet.add('Googlebook');
         else normalizedSet.add(v.trim());
       });
       uniqueVals = [...normalizedSet];
+    } else {
+      uniqueVals = [...new Set(rawVals.map(v => String(v).trim()))];
     }
-    acc[cat.key] = uniqueVals.sort();
+    acc[cat.key] = uniqueVals.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     return acc;
   }, {});
 

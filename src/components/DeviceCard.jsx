@@ -6,7 +6,6 @@ import { isLaptopDevice } from '../utils/deviceUtils';
 
 export const DeviceCard = memo(({ 
   device, 
-  brand, 
   isLaptop: propIsLaptop, 
   isSelectedForCompare, 
   isSelected = false,
@@ -40,10 +39,14 @@ export const DeviceCard = memo(({
   }, [device.Persona]);
 
   const ramStorage = useMemo(() => {
-    const ram = String(device['RAM/Memory'] || device.RAM || '').trim();
-    const storage = String(device.Storage || '').trim();
-    return [ram, storage].filter(Boolean).join(' / ') || device.Formfactor || brand;
-  }, [device, brand]);
+    const clean = (v) => {
+      const s = String(v || '').trim();
+      return s && !['none', 'n/a', 'check data', '0'].includes(s.toLowerCase()) ? s : '';
+    };
+    const ram = clean(device['RAM/Memory'] || device.RAM);
+    const storage = clean(device.Storage);
+    return [ram, storage].filter(Boolean).join(' / ') || clean(device.Formfactor);
+  }, [device]);
 
   return (
     <motion.div 
@@ -108,11 +111,11 @@ export const DeviceCard = memo(({
             />
           </div>
           <div className="device-card-info-vertical">
-            <div className="device-brand-text">{ramStorage}</div>
+            {ramStorage && <div className="device-brand-text">{ramStorage}</div>}
             <h3 className="device-title-text">
               {device['Device Name']}
             </h3>
-            <div className="device-sku-text">SKU: {device.SKU || 'N/A'}</div>
+            {device.SKU && <div className="device-sku-text">SKU: {device.SKU}</div>}
             {personaTags.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.2rem' }}>
                 {personaTags.map((p, i) => (

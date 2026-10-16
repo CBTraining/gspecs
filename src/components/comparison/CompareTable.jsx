@@ -3,7 +3,30 @@ import { Laptop, Smartphone } from 'lucide-react';
 import { SPEC_ROWS } from '../../data/compareFields';
 import { isLaptopDevice } from '../../utils/deviceUtils';
 
+const isMeaningfulValue = (val) => {
+  if (val === undefined || val === null) return false;
+  const norm = String(val).trim().toLowerCase();
+  return norm !== '' && norm !== 'none' && norm !== 'n/a' && norm !== 'check data' && norm !== '0';
+};
+
+const getRowValue = (device, row) => {
+  let raw = device[row.key];
+  if (!isMeaningfulValue(raw) && row.fallbackKey) {
+    raw = device[row.fallbackKey];
+  }
+  if (!isMeaningfulValue(raw)) return '';
+  let val = String(raw).trim();
+  if (row.suffix && !val.toLowerCase().endsWith(row.suffix.trim().toLowerCase())) {
+    val = `${val}${row.suffix}`;
+  }
+  return val;
+};
+
 const CompareTable = ({ devices }) => {
+  const visibleRows = SPEC_ROWS.filter(row =>
+    devices.some(device => isMeaningfulValue(getRowValue(device, row)))
+  );
+
   return (
     <table style={{ width: '100%', minWidth: '650px', borderCollapse: 'collapse', textAlign: 'left' }}>
       {/* Column Headers (Device Names and Images) */}
@@ -69,7 +92,7 @@ const CompareTable = ({ devices }) => {
 
       {/* Rows of specs */}
       <tbody>
-        {SPEC_ROWS.map((row, idx) => {
+        {visibleRows.map((row, idx) => {
           const RowIcon = row.icon;
           return (
             <tr 
@@ -92,13 +115,13 @@ const CompareTable = ({ devices }) => {
                 <span>{row.label}</span>
               </td>
               {devices.map(device => {
-                let val = device[row.key];
-                if (val && row.suffix && !String(val).endsWith(row.suffix)) {
-                  val = `${val}${row.suffix}`;
-                }
+                const val = getRowValue(device, row);
 
-                const pillItems = typeof val === 'string' && !/^\$?\d{1,3}(,\d{3})+(\.\d+)?$/.test(val.trim()) && val.includes(',')
-                  ? val.split(',').map(s => s.trim()).filter(Boolean)
+                const pillItems = val && !/^\$?\d{1,3}(,\d{3})+(\.\d+)?$/.test(val) && val.includes(',') && row.key !== 'External Monitors'
+                  ? val
+                      .split(',')
+                      .map(s => s.trim())
+                      .filter(s => isMeaningfulValue(s))
                   : null;
 
                 return (
@@ -120,7 +143,7 @@ const CompareTable = ({ devices }) => {
                         ))}
                       </div>
                     ) : (
-                      val || 'N/A'
+                      (pillItems && pillItems.length === 1 ? pillItems[0] : val) || '—'
                     )}
                   </td>
                 );

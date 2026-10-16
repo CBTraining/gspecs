@@ -30,8 +30,11 @@ const getPillItems = (val, label) => {
   // Never split price or numeric values like "$1,299" or "1,000"
   if (/^\$?\d{1,3}(,\d{3})+(\.\d+)?$/.test(str)) return null;
 
-  // Split by comma
-  const parts = str.split(',').map(s => s.trim()).filter(Boolean);
+  // Split by comma and filter out empty/placeholder segments (like trailing ", 0")
+  const parts = str
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s && s !== '0' && !['none', 'n/a', 'check data'].includes(s.toLowerCase()));
 
   // If it has multiple comma-separated items, return as pills
   if (parts.length > 1) {
@@ -47,7 +50,11 @@ const getPillItems = (val, label) => {
 };
 
 export const SpecGroup = ({ title, icon: Icon, items, disclaimer }) => {
-  const validItems = items.filter(item => item.value && String(item.value).toLowerCase() !== 'none' && String(item.value).trim() !== '');
+  const validItems = items.filter(item => {
+    if (!item.value) return false;
+    const norm = String(item.value).trim().toLowerCase();
+    return norm !== '' && norm !== 'none' && norm !== 'n/a' && norm !== 'check data';
+  });
   if (validItems.length === 0) return null;
 
   return (

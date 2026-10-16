@@ -37,7 +37,8 @@ export const calculateRecommendations = (devices = [], answers = {}) => {
     const colorAccuracy = (device['Color Accuracy'] || '').toLowerCase();
     const screenType = (device['Screen Type'] || '').toLowerCase();
     const screenSize = parseFloat(device['Screen Size'] || '0');
-    const weight = parseFloat(device['Weight'] || '99');
+    const weightRaw = device['Weight (lbs)'] || device['Weight'] || '';
+    const weight = parseFloat(weightRaw || '99');
 
     if (answers.display === 'color-oled') {
       if (colorAccuracy.includes('100% dci-p3')) {
@@ -57,10 +58,10 @@ export const calculateRecommendations = (devices = [], answers = {}) => {
     } else if (answers.display === 'ultra-portable') {
       if (weight <= 2.3) {
         score += 25;
-        highlights.push(`Ultra-light ${device['Weight']}`);
+        highlights.push(`Ultra-light ${weightRaw}`);
       } else if (weight <= 2.6) {
         score += 18;
-        highlights.push(`Lightweight ${device['Weight']}`);
+        highlights.push(`Lightweight ${weightRaw}`);
       }
     }
 
@@ -92,16 +93,17 @@ export const calculateRecommendations = (devices = [], answers = {}) => {
     }
 
     // 4. Battery & Platform (Weight: 20 pts)
-    const batteryHours = parseInt(device['Battery Life'] || '0', 10);
+    const batteryRaw = device['Battery Life (h)'] || device['Battery Life'] || '';
+    const batteryHours = parseInt(batteryRaw || '0', 10);
     const processor = (device['Processor'] || '').toLowerCase();
 
     if (answers.platform === 'extreme-battery') {
       if (batteryHours >= 18) {
         score += 20;
-        highlights.push(`${device['Battery Life']} Hours Battery`);
+        highlights.push(`${batteryHours} Hours Battery`);
       } else if (batteryHours >= 15) {
         score += 14;
-        highlights.push(`${device['Battery Life']} Hours Battery`);
+        highlights.push(`${batteryHours} Hours Battery`);
       }
     } else if (answers.platform === 'intel-core') {
       if (processor.includes('intel')) {

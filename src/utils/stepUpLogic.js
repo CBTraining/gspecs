@@ -26,10 +26,12 @@ export const getUpgrades = (prev, curr) => {
   }
 
   // NPU upgrade
-  const prevNpu = parseInt(prev['NPU (TOPS)']?.replace(/[^0-9]/g, ''), 10) || 0;
-  const currNpu = parseInt(curr['NPU (TOPS)']?.replace(/[^0-9]/g, ''), 10) || 0;
+  const prevNpuStr = prev['NPU'] || prev['NPU (TOPS)'];
+  const currNpuStr = curr['NPU'] || curr['NPU (TOPS)'];
+  const prevNpu = parseInt(prevNpuStr?.replace(/[^0-9]/g, ''), 10) || 0;
+  const currNpu = parseInt(currNpuStr?.replace(/[^0-9]/g, ''), 10) || 0;
   if (currNpu > prevNpu) {
-    upgrades.push(`NPU: Upgraded to ${curr['NPU (TOPS)']} (from ${prev['NPU (TOPS)']})`);
+    upgrades.push(`NPU: Upgraded to ${currNpuStr} (from ${prevNpuStr})`);
   }
 
   // Touchscreen upgrade

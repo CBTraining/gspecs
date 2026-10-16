@@ -15,14 +15,19 @@ export const SPEC_ROWS = [
   { label: 'Touchscreen', key: 'Touchscreen?', icon: Monitor },
   { label: 'Pen Compatibility', key: 'Pen Compatibility?', icon: Monitor },
   { label: 'External Monitors', key: 'External Monitors', icon: Monitor },
-  { label: 'Battery Life', key: 'Battery Life', icon: Clock },
-  { label: 'Weight', key: 'Weight', icon: Weight },
+  { label: 'Battery Life', key: 'Battery Life (h)', fallbackKey: 'Battery Life', icon: Clock, suffix: ' hrs' },
+  { label: 'Weight', key: 'Weight (lbs)', fallbackKey: 'Weight', icon: Weight },
   { label: 'Form Factor', key: 'Formfactor', icon: Laptop },
   { label: 'Ports', key: 'Ports', icon: Cable },
+  { label: 'HDMI', key: 'HDMI', icon: Cable },
+  { label: 'Thunderbolt', key: 'Thunderbolt', fallbackKey: 'Thunderbolt 4', icon: Cable },
+  { label: 'MicroSD Slot', key: 'MicroSD Slot', icon: Cable },
+  { label: 'Network Card', key: 'Network Card', icon: Cable },
+  { label: 'Bluetooth Version', key: 'Bluetooth Version', icon: Cable },
+  { label: 'Backlit Keyboard', key: 'Backlit Keyboard?', icon: Laptop },
+  { label: 'Keyboard Size', key: 'Keyboard size', icon: Laptop },
   { label: 'Security', key: 'Security', icon: ShieldCheck },
   { label: 'Build', key: 'Build', icon: Layers },
-  { label: 'USB-C Ports', key: 'USB-C', icon: Cable },
-  { label: 'USB-A Ports', key: 'USB-A', icon: Cable },
-  { label: 'HDMI', key: 'HDMI', icon: Cable },
-  { label: 'Thunderbolt', key: 'Thunderbolt 4', icon: Cable }
+  { label: 'Extra Features', key: 'Extra Features', icon: Layers }
 ];
+

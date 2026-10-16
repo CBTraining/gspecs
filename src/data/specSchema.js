@@ -28,7 +28,11 @@ export const KNOWN_SPEC_GROUPS = [
       { 
         label: 'Screen Brightness', 
         key: 'Screen Brightness (nits)',
-        format: (val) => val ? `${val} nits` : '' 
+        format: (val) => {
+          if (!val) return '';
+          const str = String(val).trim();
+          return /nit/i.test(str) ? str : `${str} nits`;
+        }
       },
       { label: 'Color Accuracy', key: 'Color Accuracy' },
       { label: 'Touchscreen', key: 'Touchscreen?' },
@@ -62,8 +66,19 @@ export const KNOWN_SPEC_GROUPS = [
       { label: 'Security', key: 'Security' },
       { label: 'Keyboard Size', key: 'Keyboard size' },
       { label: 'Backlit Keyboard', key: 'Backlit Keyboard?' },
+      { label: 'Weight', key: 'Weight (lbs)' },
       { label: 'Weight', key: 'Weight' },
-      { label: 'Battery Life', key: 'Battery Life' }
+      { 
+        label: 'Battery Life', 
+        key: 'Battery Life (h)',
+        format: (val) => {
+          if (!val) return '';
+          const str = String(val).trim();
+          return /h|hr|hour/i.test(str) ? str : `${str} hrs`;
+        }
+      },
+      { label: 'Battery Life', key: 'Battery Life' },
+      { label: 'Extra Features', key: 'Extra Features' }
     ]
   }
 ];
@@ -77,6 +92,7 @@ export const INTERNAL_RESERVED_COLUMNS = new Set([
   'Device Name',
   'Current',
   'Device Image',
+  'Drive Thumbnail',
   'OEM (brand)',
   'Device Online Listing',
   'UPC',
@@ -88,6 +104,12 @@ export const INTERNAL_RESERVED_COLUMNS = new Set([
   'About',
   'about'
 ]);
+
+const isMeaningfulSpecValue = (val) => {
+  if (val === undefined || val === null) return false;
+  const norm = String(val).trim().toLowerCase();
+  return norm !== '' && norm !== 'none' && norm !== 'n/a' && norm !== 'check data';
+};
 
 /**
  * Builds the list of spec groups for a given device.
@@ -102,15 +124,21 @@ export const getDeviceSpecGroups = (device) => {
   // 1. Process known groups
   for (const group of KNOWN_SPEC_GROUPS) {
     const items = [];
+    const seenLabels = new Set();
     for (const field of group.fields) {
       mappedKeys.add(field.key);
       const rawVal = device[field.key];
-      if (rawVal !== undefined && rawVal !== null && rawVal !== '' && String(rawVal).toLowerCase() !== 'none') {
-        const displayVal = field.format ? field.format(rawVal) : rawVal;
-        items.push({
-          label: field.label || field.key,
-          value: displayVal
-        });
+      if (isMeaningfulSpecValue(rawVal)) {
+        const label = field.label || field.key;
+        if (seenLabels.has(label)) continue;
+        const displayVal = field.format ? field.format(rawVal) : String(rawVal).trim();
+        if (isMeaningfulSpecValue(displayVal)) {
+          seenLabels.add(label);
+          items.push({
+            label,
+            value: displayVal
+          });
+        }
       }
     }
     if (items.length > 0) {
@@ -129,16 +157,13 @@ export const getDeviceSpecGroups = (device) => {
     if (
       !INTERNAL_RESERVED_COLUMNS.has(key) &&
       !mappedKeys.has(key) &&
-      value !== undefined &&
-      value !== null &&
-      value !== '' &&
-      String(value).toLowerCase() !== 'none'
+      isMeaningfulSpecValue(value)
     ) {
       // Strip trailing question marks from headers like "Cellular?" -> "Cellular"
       const cleanLabel = key.replace(/\?$/, '');
       unmappedItems.push({
         label: cleanLabel,
-        value: String(value)
+        value: String(value).trim()
       });
     }
   }
