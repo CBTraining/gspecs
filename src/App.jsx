@@ -71,6 +71,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('devices'); // 'devices' | 'stepup' | 'glossary' | 'appindex'
   const [isComparing, setIsComparing] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const { theme, toggleTheme } = useTheme();
 
@@ -89,6 +90,7 @@ function App() {
       if (matched) {
         setIsComparing(false);
         setQuizOpen(false);
+        setIsFilterOpen(false);
         setNotFoundBarcode(null);
         setSelectedDevice(matched);
         if (isDesktop) setActiveTab('devices');
@@ -128,6 +130,8 @@ function App() {
     setIsComparing,
     quizOpen,
     setQuizOpen,
+    isFilterOpen,
+    setIsFilterOpen,
     isScanning,
     stopScan,
     notFoundBarcode,
@@ -224,6 +228,8 @@ function App() {
                           comparisonDevices={comparisonDevices}
                           onToggleComparison={toggleComparison}
                           onOpenQuiz={() => setQuizOpen(true)}
+                          isFilterOpen={isFilterOpen}
+                          setIsFilterOpen={setIsFilterOpen}
                         />
                       </div>
                       <aside className={`desktop-detail-pane ${!selectedDevice ? 'has-placeholder' : ''}`}>
@@ -256,6 +262,8 @@ function App() {
                       comparisonDevices={comparisonDevices}
                       onToggleComparison={toggleComparison}
                       onOpenQuiz={() => setQuizOpen(true)}
+                      isFilterOpen={isFilterOpen}
+                      setIsFilterOpen={setIsFilterOpen}
                     />
                   )
                 )}

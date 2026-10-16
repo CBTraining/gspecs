@@ -98,7 +98,7 @@ export function useAutoUpdate() {
       params.delete('_v');
       const cleanQuery = params.toString() ? `?${params.toString()}` : '';
       const cleanUrl = window.location.pathname + cleanQuery + window.location.hash;
-      window.history.replaceState({}, '', cleanUrl);
+      window.history.replaceState(window.history.state || {}, '', cleanUrl);
     }
   }, []);
 

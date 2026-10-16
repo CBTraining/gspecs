@@ -16,28 +16,17 @@ const FilterModal = ({ isOpen, onClose, devices, activeFilters, onApply }) => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setLocalFilters(activeFilters || {});
-
-      window.history.pushState({ gspecsModal: 'filter' }, '');
-      const handlePop = () => {
-        onClose();
-      };
-      window.addEventListener('popstate', handlePop, { once: true });
-
-      return () => {
-        window.removeEventListener('popstate', handlePop);
-        document.body.style.overflow = '';
-      };
     } else {
       document.body.style.overflow = '';
     }
-  }, [isOpen, activeFilters, onClose]);
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, activeFilters]);
 
   const handleClose = () => {
-    if (window.history.state && window.history.state.gspecsModal === 'filter') {
-      window.history.back();
-    } else {
-      onClose();
-    }
+    onClose();
   };
 
   // Extract unique values for each category

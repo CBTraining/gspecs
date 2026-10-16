@@ -14,6 +14,8 @@ export function useBackNavigation({
   setIsComparing,
   quizOpen,
   setQuizOpen,
+  isFilterOpen = false,
+  setIsFilterOpen,
   isScanning,
   stopScan,
   notFoundBarcode,
@@ -31,6 +33,7 @@ export function useBackNavigation({
     activeTab,
     isComparing,
     quizOpen,
+    isFilterOpen,
     isScanning,
     notFoundBarcode,
     cameraError
@@ -42,14 +45,17 @@ export function useBackNavigation({
       activeTab,
       isComparing,
       quizOpen,
+      isFilterOpen,
       isScanning,
       notFoundBarcode,
       cameraError
     };
   });
 
-  // Flag to know when a state change was caused by popstate (to avoid pushing redundant history)
+  // Flags to coordinate programmatic history cleanup vs user back navigation
   const isPopstateHandlingRef = useRef(false);
+  const ignoreNextPopstateRef = useRef(0);
+  const isExitingRef = useRef(false);
 
   // Track currently active subview depth in browser history
   const historyDepthRef = useRef(0);
@@ -63,6 +69,8 @@ export function useBackNavigation({
     if (!currentState || !currentState.gspecsApp) {
       window.history.replaceState({ gspecsApp: true, level: 'root' }, '');
       window.history.pushState({ gspecsApp: true, level: 'home' }, '');
+    } else if (currentState.level === 'root') {
+      window.history.pushState({ gspecsApp: true, level: 'home' }, '');
     }
   }, []);
 
@@ -71,6 +79,15 @@ export function useBackNavigation({
     if (typeof window === 'undefined') return;
 
     const handlePopState = () => {
+      if (isExitingRef.current) {
+        return;
+      }
+
+      if (ignoreNextPopstateRef.current > 0) {
+        ignoreNextPopstateRef.current -= 1;
+        return;
+      }
+
       const current = stateRef.current;
       isPopstateHandlingRef.current = true;
 
@@ -86,6 +103,8 @@ export function useBackNavigation({
         setNotFoundBarcode(null);
       } else if (current.isScanning) {
         stopScan();
+      } else if (current.isFilterOpen && setIsFilterOpen) {
+        setIsFilterOpen(false);
       } else if (current.quizOpen) {
         setQuizOpen(false);
       } else if (current.isComparing) {
@@ -105,6 +124,8 @@ export function useBackNavigation({
         const now = Date.now();
         if (now - lastBackPressRef.current < 2000) {
           // User swiped back twice within 2 seconds: allow exit
+          isExitingRef.current = true;
+          lastBackPressRef.current = 0;
           window.history.back();
           return;
         }
@@ -134,101 +155,76 @@ export function useBackNavigation({
     setCameraError,
     setNotFoundBarcode,
     stopScan,
+    setIsFilterOpen,
     setQuizOpen,
     setIsComparing,
     setSelectedDevice,
     setActiveTab
   ]);
 
-  // Helper to push history entry when entering a subview
-  const pushSubview = useCallback((type) => {
-    if (isPopstateHandlingRef.current) return;
-    historyDepthRef.current += 1;
-    window.history.pushState({ gspecsApp: true, level: 'subview', type }, '');
-  }, []);
-
-  // Helper to handle user-triggered back action (e.g. Header back button or backdrop click)
+  // Helper to handle user-triggered UI back/close actions (e.g. Header back button or modal X)
   const handleBack = useCallback(() => {
-    if (historyDepthRef.current > 0) {
-      window.history.back();
-    } else {
-      // Fallback if no history entry was pushed
-      const current = stateRef.current;
-      if (current.selectedDevice) {
-        setSelectedDevice(null);
-      } else if (current.activeTab !== 'devices') {
-        setActiveTab('devices');
-      } else if (current.isComparing) {
-        setIsComparing(false);
-      } else if (current.quizOpen) {
-        setQuizOpen(false);
-      } else if (current.isScanning) {
-        stopScan();
+    const current = stateRef.current;
+    if (current.cameraError) {
+      setCameraError(null);
+    } else if (current.notFoundBarcode) {
+      setNotFoundBarcode(null);
+    } else if (current.isScanning) {
+      stopScan();
+    } else if (current.isFilterOpen && setIsFilterOpen) {
+      setIsFilterOpen(false);
+    } else if (current.quizOpen) {
+      setQuizOpen(false);
+    } else if (current.isComparing) {
+      setIsComparing(false);
+    } else if (current.selectedDevice) {
+      setSelectedDevice(null);
+    } else if (current.activeTab !== 'devices') {
+      setActiveTab('devices');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [
+    setCameraError,
+    setNotFoundBarcode,
+    stopScan,
+    setIsFilterOpen,
+    setQuizOpen,
+    setIsComparing,
+    setSelectedDevice,
+    setActiveTab
+  ]);
+
+  // Synchronize browser history depth with active subviews/modals
+  const activeSubviewCount =
+    (cameraError ? 1 : 0) +
+    (notFoundBarcode ? 1 : 0) +
+    (isScanning ? 1 : 0) +
+    (isFilterOpen ? 1 : 0) +
+    (quizOpen ? 1 : 0) +
+    (isComparing ? 1 : 0) +
+    (selectedDevice ? 1 : 0) +
+    (activeTab !== 'devices' ? 1 : 0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (activeSubviewCount > historyDepthRef.current) {
+      const toPush = activeSubviewCount - historyDepthRef.current;
+      for (let i = 0; i < toPush; i++) {
+        window.history.pushState({ gspecsApp: true, level: 'subview' }, '');
+      }
+      historyDepthRef.current = activeSubviewCount;
+    } else if (activeSubviewCount < historyDepthRef.current) {
+      if (!isPopstateHandlingRef.current) {
+        const toPop = historyDepthRef.current - activeSubviewCount;
+        historyDepthRef.current = activeSubviewCount;
+        ignoreNextPopstateRef.current += 1;
+        window.history.go(-toPop);
+      } else {
+        historyDepthRef.current = activeSubviewCount;
       }
     }
-  }, [setSelectedDevice, setActiveTab, setIsComparing, setQuizOpen, stopScan]);
-
-  // Track transitions for selectedDevice
-  const prevDeviceRef = useRef(selectedDevice);
-  useEffect(() => {
-    if (!prevDeviceRef.current && selectedDevice && !isPopstateHandlingRef.current) {
-      pushSubview('detail');
-    }
-    prevDeviceRef.current = selectedDevice;
-  }, [selectedDevice, pushSubview]);
-
-  // Track transitions for activeTab
-  const prevTabRef = useRef(activeTab);
-  useEffect(() => {
-    if (prevTabRef.current === 'devices' && activeTab !== 'devices' && !isPopstateHandlingRef.current) {
-      pushSubview('tab');
-    } else if (prevTabRef.current !== 'devices' && activeTab !== 'devices' && !isPopstateHandlingRef.current) {
-      // Switching between secondary tabs: replace state so only 1 back swipe is needed to return to homescreen
-      window.history.replaceState({ gspecsApp: true, level: 'subview', type: 'tab', tab: activeTab }, '');
-    }
-    prevTabRef.current = activeTab;
-  }, [activeTab, pushSubview]);
-
-  // Track transitions for modals
-  const prevComparingRef = useRef(isComparing);
-  useEffect(() => {
-    if (!prevComparingRef.current && isComparing && !isPopstateHandlingRef.current) {
-      pushSubview('compare');
-    }
-    prevComparingRef.current = isComparing;
-  }, [isComparing, pushSubview]);
-
-  const prevQuizRef = useRef(quizOpen);
-  useEffect(() => {
-    if (!prevQuizRef.current && quizOpen && !isPopstateHandlingRef.current) {
-      pushSubview('quiz');
-    }
-    prevQuizRef.current = quizOpen;
-  }, [quizOpen, pushSubview]);
-
-  const prevScanningRef = useRef(isScanning);
-  useEffect(() => {
-    if (!prevScanningRef.current && isScanning && !isPopstateHandlingRef.current) {
-      pushSubview('scan');
-    }
-    prevScanningRef.current = isScanning;
-  }, [isScanning, pushSubview]);
-
-  const prevNotFoundRef = useRef(notFoundBarcode);
-  useEffect(() => {
-    if (!prevNotFoundRef.current && notFoundBarcode && !isPopstateHandlingRef.current) {
-      pushSubview('notFound');
-    }
-    prevNotFoundRef.current = notFoundBarcode;
-  }, [notFoundBarcode, pushSubview]);
-
-  const prevCameraErrorRef = useRef(cameraError);
-  useEffect(() => {
-    if (!prevCameraErrorRef.current && cameraError && !isPopstateHandlingRef.current) {
-      pushSubview('cameraError');
-    }
-    prevCameraErrorRef.current = cameraError;
-  }, [cameraError, pushSubview]);
+  }, [activeSubviewCount]);
 
   return {
     showExitToast,

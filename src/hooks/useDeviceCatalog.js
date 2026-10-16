@@ -89,7 +89,7 @@ export function useDeviceCatalog() {
 
     const newQuery = params.toString() ? `?${params.toString()}` : '';
     const newPath = window.location.pathname + newQuery;
-    window.history.replaceState({}, '', newPath);
+    window.history.replaceState(window.history.state || {}, '', newPath);
 
     return () => {
       document.body.style.overflow = '';

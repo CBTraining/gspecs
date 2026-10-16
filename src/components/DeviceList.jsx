@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Filter, Search, AlertTriangle } from 'lucide-react';
 import FilterModal from './FilterModal';
@@ -13,9 +13,14 @@ const DeviceList = ({
   selectedDevice = null,
   comparisonDevices = [], 
   onToggleComparison, 
-  onOpenQuiz 
+  onOpenQuiz,
+  isFilterOpen: externalFilterOpen,
+  setIsFilterOpen: externalSetFilterOpen
 }) => {
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [internalFilterOpen, setInternalFilterOpen] = useState(false);
+  const isFilterOpen = externalFilterOpen !== undefined ? externalFilterOpen : internalFilterOpen;
+  const setIsFilterOpen = externalSetFilterOpen || setInternalFilterOpen;
+  const handleCloseFilter = useCallback(() => setIsFilterOpen(false), [setIsFilterOpen]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState(() => {
     try {
@@ -201,7 +206,7 @@ const DeviceList = ({
 
       <FilterModal 
         isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
+        onClose={handleCloseFilter}
         devices={devices}
         activeFilters={activeFilters}
         onApply={setActiveFilters}
