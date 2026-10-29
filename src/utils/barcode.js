@@ -3,6 +3,12 @@
  * direct URLs, and UPC/SKU fallbacks.
  */
 
+const SAFE_DATA_IMAGE_RE = /^data:image\/(png|jpeg|jpg|webp|gif|svg\+xml);/i;
+
+const isSafeBarcodeUrl = (url) => {
+  return url.startsWith('http://') || url.startsWith('https://') || SAFE_DATA_IMAGE_RE.test(url);
+};
+
 /**
  * Resolves a displayable barcode image URL for a device/row
  * @param {object} deviceOrRow 
@@ -13,8 +19,8 @@ export function resolveBarcode(deviceOrRow) {
 
   const rawBarcode = (deviceOrRow.Barcode || deviceOrRow['Barcode'] || '').trim();
 
-  // 1. Direct web URL or data URI
-  if (rawBarcode.startsWith('http://') || rawBarcode.startsWith('https://') || rawBarcode.startsWith('data:')) {
+  // 1. Direct web URL or safe image data URI
+  if (isSafeBarcodeUrl(rawBarcode)) {
     return rawBarcode;
   }
 
@@ -22,7 +28,10 @@ export function resolveBarcode(deviceOrRow) {
   if (rawBarcode.startsWith('=IMAGE') || rawBarcode.startsWith('IMAGE')) {
     const match = rawBarcode.match(/IMAGE\s*\(\s*["']([^"']+)["']/i);
     if (match && match[1]) {
-      return match[1];
+      const extracted = match[1].trim();
+      if (isSafeBarcodeUrl(extracted)) {
+        return extracted;
+      }
     }
   }
 

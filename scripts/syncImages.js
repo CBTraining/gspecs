@@ -26,6 +26,19 @@ const extractDriveId = (url) => {
   return match ? match[1] : null;
 };
 
+const isAllowedSyncHost = (hostname) => {
+  return (
+    hostname === 'docs.google.com' ||
+    hostname === 'drive.google.com' ||
+    hostname === 'barcode.tec-it.com' ||
+    hostname === 'script.google.com' ||
+    hostname === 'script.googleusercontent.com' ||
+    hostname.endsWith('.googleusercontent.com') ||
+    hostname.endsWith('.googleapis.com') ||
+    hostname.endsWith('.google.com')
+  );
+};
+
 const fetchWithTimeout = async (url, timeoutMs = 8000) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -35,12 +48,30 @@ const fetchWithTimeout = async (url, timeoutMs = 8000) => {
     return res;
   } catch (err) {
     clearTimeout(timeout);
+    const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
     // Resilient fallback using https module for local environments with custom CA/proxies
     return new Promise((resolve, reject) => {
-      const makeReq = (targetUrl) => {
-        const req = https.get(targetUrl, { rejectUnauthorized: false }, (res) => {
+      const makeReq = (targetUrl, redirectsLeft = 5, rejectUnauthorized = true) => {
+        let parsedUrl;
+        try {
+          parsedUrl = new URL(targetUrl);
+        } catch (urlErr) {
+          reject(urlErr);
+          return;
+        }
+        if (parsedUrl.protocol !== 'https:' || !isAllowedSyncHost(parsedUrl.hostname)) {
+          reject(new Error(`Blocked untrusted sync URL: ${targetUrl}`));
+          return;
+        }
+
+        const req = https.get(parsedUrl.toString(), { rejectUnauthorized }, (res) => {
           if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-            makeReq(res.headers.location);
+            if (redirectsLeft <= 0) {
+              reject(new Error('Too many redirects'));
+              return;
+            }
+            const nextUrl = new URL(res.headers.location, parsedUrl).toString();
+            makeReq(nextUrl, redirectsLeft - 1, rejectUnauthorized);
             return;
           }
           const chunks = [];
@@ -55,7 +86,13 @@ const fetchWithTimeout = async (url, timeoutMs = 8000) => {
             });
           });
         });
-        req.on('error', reject);
+        req.on('error', (reqErr) => {
+          if (rejectUnauthorized && !isCI && /CERT|SELF_SIGNED|UNABLE_TO_VERIFY|UNABLE_TO_GET_ISSUER/i.test(String(reqErr.code || reqErr.message))) {
+            makeReq(targetUrl, redirectsLeft, false);
+            return;
+          }
+          reject(reqErr);
+        });
         req.setTimeout(timeoutMs, () => {
           req.destroy();
           reject(new Error('Request timeout'));

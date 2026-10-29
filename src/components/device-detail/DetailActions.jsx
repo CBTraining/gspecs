@@ -8,11 +8,20 @@ const DetailActions = ({ device }) => {
   };
 
   const openLink = (url) => {
-    let link = url;
-    if (link && !link.startsWith('http')) {
+    if (!url || typeof url !== 'string') return;
+    let link = url.trim();
+    if (!link) return;
+    if (!/^https?:\/\//i.test(link)) {
       link = 'https://' + link;
     }
-    if (link) window.open(link, '_blank');
+    try {
+      const parsed = new URL(link);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        window.open(parsed.toString(), '_blank', 'noopener,noreferrer');
+      }
+    } catch {
+      // Ignore malformed URLs safely
+    }
   };
 
   return (

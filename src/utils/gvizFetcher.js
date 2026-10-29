@@ -9,11 +9,17 @@ export const fetchGvizData = (spreadsheetId, gid = null) => {
       return reject(new Error('GViz JSONP requires browser environment'));
     }
 
+    const cleanSheetId = String(spreadsheetId || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const cleanGid = gid !== null && gid !== undefined ? String(gid).replace(/[^0-9]/g, '') : null;
+    if (!cleanSheetId) {
+      return reject(new Error('Invalid spreadsheetId'));
+    }
+
     const callbackName = `gviz_cb_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
     const script = document.createElement('script');
-    let url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=responseHandler:${callbackName}&_t=${Date.now()}`;
-    if (gid) {
-      url += `&gid=${gid}`;
+    let url = `https://docs.google.com/spreadsheets/d/${cleanSheetId}/gviz/tq?tqx=responseHandler:${callbackName}&_t=${Date.now()}`;
+    if (cleanGid) {
+      url += `&gid=${cleanGid}`;
     }
 
     let isDone = false;
