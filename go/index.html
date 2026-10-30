@@ -4,22 +4,25 @@
   <meta charset="utf-8">
   <title>Redirecting...</title>
   <script>
-    // Your shortlinks: gspecs.app/go?key
     const links = {
       "promos": "https://gpromos.glide.app"
     };
 
-    // Grabs "promos" from "gspecs.app/go?promos" (case-insensitive)
-    const key = window.location.search.substring(1).toLowerCase();
+    // Reads either ?promos or #promos and cleans out any extra symbols
+    const rawQuery = window.location.search.substring(1) || window.location.hash.substring(1);
+    const key = rawQuery.split("&")[0].replace(/=/g, "").trim().toLowerCase();
 
     if (links[key]) {
       window.location.replace(links[key]);
     } else {
-      window.location.replace("https://gspecs.app");
+      // Stays here and tells you what key it saw instead of bouncing you home
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("msg").innerText = "Link not found for key: [" + key + "]";
+      });
     }
   </script>
 </head>
 <body style="background-color: #121212; color: #ffffff; font-family: sans-serif; text-align: center; padding-top: 20vh;">
-  <p>Redirecting...</p>
+  <p id="msg">Redirecting...</p>
 </body>
 </html>
