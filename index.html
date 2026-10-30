@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      // Forward clean short-link paths like /go/promos to /go/#promos
+      (function() {
+        var m = window.location.pathname.match(/^(.*\/go)\/([^/?#]+)/i);
+        if (m && m[2] && m[2].toLowerCase() !== 'index.html') {
+          window.location.replace(m[1] + '/#' + encodeURIComponent(m[2]) + window.location.search);
+        }
+      })();
+    </script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DLFGP7D4WY"></script>
     <script>

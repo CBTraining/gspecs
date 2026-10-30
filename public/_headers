@@ -4,6 +4,18 @@
 /index.html
   Cache-Control: no-cache, no-store, must-revalidate
 
+/404.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/go
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/go/
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/go/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /version.json
   Cache-Control: no-cache, no-store, must-revalidate
 

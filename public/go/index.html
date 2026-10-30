@@ -2,24 +2,57 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Redirecting...</title>
   <script>
+    // =========================================================================
+    // DYNAMIC QR / SHORT LINKS
+    // Add or update your links here. Any of these formats will work:
+    //   https://gspecs.app/go/#promos
+    //   https://gspecs.app/go/?promos
+    //   https://gspecs.app/go/promos
+    // =========================================================================
     const links = {
       "promos": "https://gpromos.glide.app"
     };
 
-    // Reads either ?promos or #promos and cleans out any extra symbols
-    const rawQuery = window.location.search.substring(1) || window.location.hash.substring(1);
-    const key = rawQuery.split("&")[0].replace(/=/g, "").trim().toLowerCase();
+    function handleRedirect() {
+      // 1. Check ?query or #hash first
+      const rawQuery = window.location.search.substring(1) || window.location.hash.substring(1);
+      let key = rawQuery.split("&")[0].replace(/^key=/i, "").replace(/[=/]/g, "").trim().toLowerCase();
 
-    if (links[key]) {
-      window.location.replace(links[key]);
-    } else {
-      // Stays here and tells you what key it saw instead of bouncing you home
-      document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("msg").innerText = "Link not found for key: [" + key + "]";
-      });
+      // 2. Fallback: check path segment after /go/ (e.g. /go/promos)
+      if (!key) {
+        const pathMatch = window.location.pathname.match(/\/go\/([^/?#]+)/i);
+        if (pathMatch && pathMatch[1] && pathMatch[1].toLowerCase() !== "index.html") {
+          key = decodeURIComponent(pathMatch[1]).trim().toLowerCase();
+        }
+      }
+
+      if (links[key]) {
+        window.location.replace(links[key]);
+      } else {
+        const updateMsg = () => {
+          const el = document.getElementById("msg");
+          if (el) {
+            el.innerText = key
+              ? "Link not found for key: [" + key + "]"
+              : "No redirect key provided.";
+          }
+        };
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", updateMsg, { once: true });
+        } else {
+          updateMsg();
+        }
+      }
     }
+
+    handleRedirect();
+    window.addEventListener("hashchange", handleRedirect);
   </script>
 </head>
 <body style="background-color: #121212; color: #ffffff; font-family: sans-serif; text-align: center; padding-top: 20vh;">

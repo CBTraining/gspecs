@@ -3,6 +3,7 @@ const CACHE_NAME = 'gspecs-pwa-cache-v1';
 // URLs that should never be served from SW cache (always network-only)
 const NETWORK_ONLY_PATTERNS = [
   /\/version\.json/,
+  /\/go(\/|$|\?|#)/,
   /google-analytics\.com/,
   /googletagmanager\.com/
 ];

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Redirecting...</title>
+  <script>
+    // If someone visits /go/promos on GitHub Pages (which hits 404.html),
+    // forward to /go/#promos so public/go/index.html remains the single source of truth.
+    const goMatch = window.location.pathname.match(/^(.*\/go)\/([^/?#]+)/i);
+    if (goMatch && goMatch[2]) {
+      window.location.replace(goMatch[1] + "/#" + encodeURIComponent(goMatch[2]) + window.location.search);
+    } else {
+      window.location.replace("/");
+    }
+  </script>
+</head>
+<body style="background-color: #121212; color: #ffffff; font-family: sans-serif; text-align: center; padding-top: 20vh;">
+  <p>Redirecting...</p>
+</body>
+</html>
